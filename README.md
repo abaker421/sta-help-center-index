@@ -8,6 +8,7 @@ Internal article-index portal for School Technology Associates support staff. Si
 - **Deploy model:** Git-connected — pushes to `main` auto-deploy
 - **Build command:** none (static)
 - **Build output directory:** `/` (repo root)
+- **Access:** Cloudflare Zero Trust, gated to `@k12sta.com` via Google Workspace SSO
 
 ## Files
 
@@ -24,7 +25,7 @@ This repo holds the **deployed** copy. The editable source lives at:
 
 `C:\Users\Adam\Documents\Claude\Projects\.STA Projects\Help Center Assistant\article-index\HC-Index-App.html`
 
-After editing the source, re-sync `index.html` here (see that project's `MAINTENANCE.md`), commit, and push. Cloudflare auto-deploys.
+After editing the source, re-sync `index.html` here (see that project's `MAINTENANCE.md`), bump the `CACHE` constant in `sw.js` to `sta-hc-YYYYMMDD`, commit, and push. Cloudflare auto-deploys.
 
 ## Important: no `_redirects` file
 
