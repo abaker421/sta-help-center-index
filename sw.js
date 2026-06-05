@@ -1,7 +1,6 @@
-const CACHE = 'sta-hc-202606046';
+const CACHE = 'sta-hc-1780697739';
 const PRECACHE = ['/', '/index.html', '/manifest.json',
-  '/icons/icon-192.png', '/icons/icon-512.png',
-  '/icons/favicon-32.png', '/icons/favicon-16.png'];
+  '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(PRECACHE)).then(() => self.skipWaiting()));
