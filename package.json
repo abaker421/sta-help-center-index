@@ -11,9 +11,6 @@
     "migrate:remote": "wrangler d1 migrations apply sta-tracker --remote",
     "dev": "wrangler pages dev --binding LOCAL_DEV=1"
   },
-  "dependencies": {
-    "@cloudflare/pages-plugin-cloudflare-access": "^1.0.4"
-  },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240605.0",
     "wrangler": "^4.0.0"
