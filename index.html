@@ -356,28 +356,263 @@ function ProjectCard({ p }) {
   );
 }
 
+// -- Projects editing (Phase B2) -------------------------------------------------
+// Inline member editing of the live D1-backed tab. Authorization is enforced
+// SERVER-SIDE on every write; the UI fetches GET /api/me only to HIDE admin-only
+// controls (create / delete project) as a courtesy - never as the gate. Every
+// project / open-item PATCH carries that row's `version` as expected_version
+// (optimistic concurrency, KB module-04); a 409 surfaces a reconcile-and-reload
+// banner and NEVER auto-overwrites. The baked window.PROJECT_DATA is read/first-
+// paint only - editing requires the live API (id + version come from it).
+const EDIT_INPUT = { font: 'inherit', fontSize: '9pt', padding: '3px 6px', border: '1px solid #c5c9cc', borderRadius: '4px', boxSizing: 'border-box', width: '100%' };
+const EDIT_BTN = { font: 'inherit', fontSize: '8.5pt', fontWeight: 600, padding: '4px 10px', borderRadius: '14px', border: '1.5px solid #006098', background: '#006098', color: '#fff', cursor: 'pointer' };
+const EDIT_BTN_GHOST = { ...EDIT_BTN, background: '#fff', color: '#006098' };
+const EDIT_BTN_DANGER = { ...EDIT_BTN, border: '1.5px solid #b3402f', background: '#fff', color: '#b3402f' };
+const STATUS_CLASSES = ['info', 'warn', 'ok'];
+const STAGE_CLASSES = ['dev', 'post', 'none'];
+
+// Single write helper. Returns { ok, status, data } and never throws, so callers
+// can branch on status (409 -> conflict, 4xx -> error message).
+async function apiWrite(method, path, body) {
+  try {
+    const res = await fetch(path, {
+      method, credentials: 'include', cache: 'no-store',
+      headers: { 'content-type': 'application/json' },
+      body: body == null ? undefined : JSON.stringify(body),
+    });
+    let data = null;
+    try { data = await res.json(); } catch (e) {}
+    return { ok: res.ok, status: res.status, data };
+  } catch (e) {
+    return { ok: false, status: 0, data: null };
+  }
+}
+
+function ConflictBanner({ conflict, onReload, onDismiss }) {
+  if (!conflict) return null;
+  return (
+    <div style={{ border: '1.5px solid #d99a00', background: '#fff8e6', borderRadius: '8px', padding: '10px 12px', margin: '10px 0', fontSize: '9pt' }}>
+      <b>This changed since you loaded it.</b> Someone saved a newer version, so your edit was not applied. Reload the latest and re-apply your change.
+      <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
+        <button type="button" style={EDIT_BTN} onClick={onReload}>Reload latest</button>
+        <button type="button" style={EDIT_BTN_GHOST} onClick={onDismiss}>Dismiss</button>
+      </div>
+    </div>
+  );
+}
+
+function EditableItem({ it, hasStage, onWrite, busy }) {
+  const seed = () => ({ text: it.text || '', meta: it.meta || '', stage: it.stage || '', stage_class: it.stageClass || 'none' });
+  const [d, setD] = useState(seed);
+  useEffect(() => { setD(seed()); }, [it]); // re-seed after a reload replaces the row
+  const ch = (k) => (e) => setD(s => ({ ...s, [k]: e.target.value }));
+  const save = () => {
+    const body = { expected_version: it.version };
+    if (d.text !== (it.text || '')) body.text = d.text;
+    if (d.meta !== (it.meta || '')) body.meta = d.meta;
+    if (hasStage) {
+      if (d.stage !== (it.stage || '')) body.stage = d.stage;
+      if (d.stage_class !== (it.stageClass || 'none')) body.stage_class = d.stage_class;
+    }
+    if (Object.keys(body).length > 1) onWrite('PATCH', '/api/items/' + it.id, body);
+  };
+  return (
+    <div className="pd-item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '4px', borderTop: '1px dashed #e3e6e8', paddingTop: '6px' }}>
+      <input style={EDIT_INPUT} value={d.text} onChange={ch('text')} placeholder="Item text" />
+      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <input style={{ ...EDIT_INPUT, flex: '2 1 130px', width: 'auto' }} value={d.meta} onChange={ch('meta')} placeholder="who / when" />
+        {hasStage && <>
+          <input style={{ ...EDIT_INPUT, flex: '1 1 80px', width: 'auto' }} value={d.stage} onChange={ch('stage')} placeholder="stage" />
+          <select style={{ ...EDIT_INPUT, flex: '0 1 84px', width: 'auto' }} value={d.stage_class} onChange={ch('stage_class')}>
+            {STAGE_CLASSES.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </>}
+        {/* Controlled done checkbox: reflects persisted state (GET payload carries
+            done) and PATCHes the toggle (audited server-side) with the row version. */}
+        <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '8.5pt', color: '#5a5d5e', whiteSpace: 'nowrap' }}>
+          <input type="checkbox" disabled={busy} checked={!!it.done}
+            onChange={(e) => onWrite('PATCH', '/api/items/' + it.id, { expected_version: it.version, done: e.target.checked })} />
+          done
+        </label>
+        <button type="button" style={EDIT_BTN_GHOST} disabled={busy} onClick={save}>Save</button>
+        <button type="button" style={EDIT_BTN_DANGER} disabled={busy}
+          onClick={() => { if (window.confirm('Remove this item?')) onWrite('DELETE', '/api/items/' + it.id, { expected_version: it.version }); }}>Remove</button>
+      </div>
+    </div>
+  );
+}
+
+function AddItemForm({ projectId, onWrite, busy }) {
+  const [text, setText] = useState('');
+  const [meta, setMeta] = useState('');
+  const add = async () => {
+    if (!text.trim()) return;
+    const r = await onWrite('POST', '/api/projects/' + projectId + '/items', { text: text.trim(), meta: meta.trim() });
+    if (r && r.ok) { setText(''); setMeta(''); }
+  };
+  return (
+    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+      <input style={{ ...EDIT_INPUT, flex: '2 1 150px', width: 'auto' }} value={text} onChange={e => setText(e.target.value)} placeholder="New open item" />
+      <input style={{ ...EDIT_INPUT, flex: '1 1 100px', width: 'auto' }} value={meta} onChange={e => setMeta(e.target.value)} placeholder="who / when" />
+      <button type="button" style={EDIT_BTN} disabled={busy || !text.trim()} onClick={add}>Add item</button>
+    </div>
+  );
+}
+
+function AddTimelineForm({ projectId, onWrite, busy }) {
+  const [when, setWhen] = useState('');
+  const [note, setNote] = useState('');
+  const add = async () => {
+    if (!when.trim() || !note.trim()) return;
+    const r = await onWrite('POST', '/api/projects/' + projectId + '/timeline', { when_label: when.trim(), note: note.trim() });
+    if (r && r.ok) { setWhen(''); setNote(''); }
+  };
+  return (
+    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
+      <input style={{ ...EDIT_INPUT, flex: '0 1 80px', width: 'auto' }} value={when} onChange={e => setWhen(e.target.value)} placeholder="when (6/6)" />
+      <input style={{ ...EDIT_INPUT, flex: '2 1 150px', width: 'auto' }} value={note} onChange={e => setNote(e.target.value)} placeholder="note" />
+      <button type="button" style={EDIT_BTN} disabled={busy || !when.trim() || !note.trim()} onClick={add}>Add note</button>
+    </div>
+  );
+}
+
+function EditableProjectCard({ p, isAdmin, onWrite, busy }) {
+  const hasStage = p.stage != null; // dev projects carry a stage tag; ops do not
+  const seed = () => ({ status: p.status || '', status_class: p.statusClass || 'info', stage: p.stage || '', stage_class: p.stageClass || 'none', statusline: p.statusline || '', next_step: p.next || '' });
+  const [d, setD] = useState(seed);
+  useEffect(() => { setD(seed()); }, [p]); // re-seed after a reload replaces the row
+  const ch = (k) => (e) => setD(s => ({ ...s, [k]: e.target.value }));
+  const saveProject = () => {
+    const body = { expected_version: p.version };
+    if (d.status !== (p.status || '')) body.status = d.status;
+    if (d.status_class !== (p.statusClass || 'info')) body.status_class = d.status_class;
+    if (d.statusline !== (p.statusline || '')) body.statusline = d.statusline;
+    if (d.next_step !== (p.next || '')) body.next_step = d.next_step;
+    if (hasStage) {
+      if (d.stage !== (p.stage || '')) body.stage = d.stage;
+      if (d.stage_class !== (p.stageClass || 'none')) body.stage_class = d.stage_class;
+    }
+    if (Object.keys(body).length > 1) onWrite('PATCH', '/api/projects/' + p.id, body);
+  };
+  return (
+    <div className="proj-card"><div className="proj-card-body">
+      <div className="proj-top">
+        <span className="proj-name">{p.name}</span>
+        <span className="who" style={{ fontSize: '8pt', color: '#9aa3a8' }}>v{p.version}</span>
+      </div>
+      <div style={{ display: 'grid', gap: '6px', marginTop: '6px' }}>
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+          <input style={{ ...EDIT_INPUT, flex: '2 1 150px', width: 'auto' }} value={d.status} onChange={ch('status')} placeholder="status" />
+          <select style={{ ...EDIT_INPUT, flex: '0 1 84px', width: 'auto' }} value={d.status_class} onChange={ch('status_class')}>
+            {STATUS_CLASSES.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
+        {hasStage && (
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            <input style={{ ...EDIT_INPUT, flex: '2 1 150px', width: 'auto' }} value={d.stage} onChange={ch('stage')} placeholder="stage" />
+            <select style={{ ...EDIT_INPUT, flex: '0 1 84px', width: 'auto' }} value={d.stage_class} onChange={ch('stage_class')}>
+              {STAGE_CLASSES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        )}
+        <textarea style={{ ...EDIT_INPUT, minHeight: '38px', resize: 'vertical' }} value={d.statusline} onChange={ch('statusline')} placeholder="status line" />
+        <input style={EDIT_INPUT} value={d.next_step} onChange={ch('next_step')} placeholder="next step (optional)" />
+        <div><button type="button" style={EDIT_BTN} disabled={busy} onClick={saveProject}>Save project</button></div>
+      </div>
+
+      <span className="pd-lbl" style={{ marginTop: '10px' }}>Open items</span>
+      {(p.openItems || []).map((it, i) => <EditableItem key={it.id || i} it={it} hasStage={hasStage} onWrite={onWrite} busy={busy} />)}
+      <AddItemForm projectId={p.id} onWrite={onWrite} busy={busy} />
+
+      <span className="pd-lbl" style={{ marginTop: '10px' }}>Add timeline note</span>
+      <AddTimelineForm projectId={p.id} onWrite={onWrite} busy={busy} />
+
+      {isAdmin && (
+        <div style={{ marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '8px' }}>
+          <button type="button" style={EDIT_BTN_DANGER} disabled={busy}
+            onClick={() => { if (window.confirm('Soft-delete project "' + p.name + '"? It can be restored from the audit trail.')) onWrite('DELETE', '/api/projects/' + p.id, { expected_version: p.version }); }}>
+            Delete project (admin)
+          </button>
+        </div>
+      )}
+    </div></div>
+  );
+}
+
+function NewProjectForm({ onWrite, busy }) {
+  const [open, setOpen] = useState(false);
+  const [f, setF] = useState({ group: 'dev', name: '', status: '' });
+  const ch = (k) => (e) => setF(s => ({ ...s, [k]: e.target.value }));
+  const create = async () => {
+    if (!f.name.trim() || !f.status.trim()) return;
+    const r = await onWrite('POST', '/api/projects', { group: f.group, name: f.name.trim(), status: f.status.trim() });
+    if (r && r.ok) { setF({ group: 'dev', name: '', status: '' }); setOpen(false); }
+  };
+  if (!open) return <button type="button" style={EDIT_BTN_GHOST} onClick={() => setOpen(true)}>+ New project (admin)</button>;
+  return (
+    <div style={{ border: '1px solid #d6dadd', borderRadius: '8px', padding: '10px', display: 'grid', gap: '6px', maxWidth: '440px' }}>
+      <div style={{ display: 'flex', gap: '6px' }}>
+        <select style={{ ...EDIT_INPUT, width: 'auto' }} value={f.group} onChange={ch('group')}>
+          <option value="dev">dev</option><option value="ops">ops</option>
+        </select>
+        <input style={EDIT_INPUT} value={f.name} onChange={ch('name')} placeholder="Project name" />
+      </div>
+      <input style={EDIT_INPUT} value={f.status} onChange={ch('status')} placeholder="Status" />
+      <div style={{ display: 'flex', gap: '6px' }}>
+        <button type="button" style={EDIT_BTN} disabled={busy || !f.name.trim() || !f.status.trim()} onClick={create}>Create</button>
+        <button type="button" style={EDIT_BTN_GHOST} onClick={() => setOpen(false)}>Cancel</button>
+      </div>
+    </div>
+  );
+}
+
 function ProjectsView({ data }) {
-  // Phase B1: read-only, live. Initial paint from the baked window.PROJECT_DATA
-  // (offline / first-paint fallback); then fetch the gated D1-backed API so a
-  // Refresh (and periodic re-fetch) picks up live edits without an app rebuild.
-  // The API returns the SAME wrapped shape ({ generated, stageLegend, groups })
-  // the static project-data.json used, so this is a one-line endpoint swap.
-  // credentials:'include' sends the Cloudflare Access cookie (same-origin, no CORS).
-  // On any error we keep the last-good data (baked copy on first load).
+  // Phase B1 read path + Phase B2 inline editing. First paint from the baked
+  // window.PROJECT_DATA (offline / first-paint fallback, READ ONLY); then fetch the
+  // gated D1-backed API for live data and editing. Edits go through PATCH/POST/DELETE
+  // on /api/*; every project / open-item PATCH sends the row's `version` as
+  // expected_version, and a 409 surfaces a reconcile banner (never auto-overwrites).
+  // Role comes from GET /api/me (the server still enforces it on every write); the
+  // edit toggle shows for any signed-in user and admin-only controls hide for members.
   const [pdata, setPdata] = useState(data || {});
   const [updated, setUpdated] = useState((data && data.generated) || null);
   const [status, setStatus] = useState('idle'); // idle | loading | error
+  const [me, setMe] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [conflict, setConflict] = useState(null);
+  const [err, setErr] = useState(null);
+  const [busy, setBusy] = useState(false);
 
   const load = useCallback(() => {
     setStatus('loading');
-    fetch('/api/projects', { credentials: 'include', cache: 'no-store' })
+    return fetch('/api/projects', { credentials: 'include', cache: 'no-store' })
       .then(r => { if (!r.ok) throw new Error('fetch failed'); return r.json(); })
       .then(j => { setPdata(j); setUpdated(j.generated || null); setStatus('idle'); })
       .catch(() => { setStatus('error'); });
   }, []);
 
   useEffect(() => { load(); }, [load]);
+  // Identity for UI tailoring only - never the authorization gate (server enforces).
+  useEffect(() => {
+    fetch('/api/me', { credentials: 'include', cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null).then(u => setMe(u)).catch(() => setMe(null));
+  }, []);
 
+  // Run a write, then reconcile: 409 -> conflict banner; other failure -> error;
+  // success -> clear and re-fetch the live list so versions advance everywhere.
+  const onWrite = useCallback(async (method, path, body) => {
+    setBusy(true);
+    const r = await apiWrite(method, path, body);
+    setBusy(false);
+    if (r.status === 409) { setConflict({ current: r.data && r.data.current }); return r; }
+    if (!r.ok) { setErr((r.data && r.data.error) || ('write failed (HTTP ' + r.status + ')')); return r; }
+    setErr(null); setConflict(null);
+    await load();
+    return r;
+  }, [load]);
+
+  const isAdmin = !!(me && me.role === 'admin');
+  const canEdit = !!me; // any signed-in @k12sta identity may edit content
   const groups = (pdata && pdata.groups) || [];
   const legend = (pdata && pdata.stageLegend) || [];
   return (
@@ -389,16 +624,32 @@ function ProjectsView({ data }) {
             Project status across STA products. Source: agenda-state.md{updated ? ' · updated ' + updated : ''}.
             {status === 'loading' && <span> · refreshing…</span>}
             {status === 'error' && <span> · showing built-in copy (live data file not reachable)</span>}
+            {me && <span> · signed in as {me.email} ({me.role})</span>}
           </div>
         </div>
-        <button type="button" onClick={load} disabled={status === 'loading'}
-          style={{ flexShrink: 0, marginTop: '4px', padding: '7px 14px', borderRadius: '16px',
-            border: '1.5px solid #006098', background: '#fff', color: '#006098',
-            fontFamily: "'Roboto',Arial,sans-serif", fontSize: '8.5pt', fontWeight: 600,
-            cursor: status === 'loading' ? 'default' : 'pointer' }}>
-          {status === 'loading' ? '↻ Refreshing…' : '↻ Refresh'}
-        </button>
+        <div style={{ display: 'flex', gap: '8px', flexShrink: 0, marginTop: '4px' }}>
+          {canEdit && (
+            <button type="button" onClick={() => { setEditMode(e => !e); setConflict(null); setErr(null); }}
+              style={{ padding: '7px 14px', borderRadius: '16px', border: '1.5px solid #006098',
+                background: editMode ? '#006098' : '#fff', color: editMode ? '#fff' : '#006098',
+                fontFamily: "'Roboto',Arial,sans-serif", fontSize: '8.5pt', fontWeight: 600, cursor: 'pointer' }}>
+              {editMode ? '✓ Editing' : '✎ Edit'}
+            </button>
+          )}
+          <button type="button" onClick={load} disabled={status === 'loading'}
+            style={{ padding: '7px 14px', borderRadius: '16px',
+              border: '1.5px solid #006098', background: '#fff', color: '#006098',
+              fontFamily: "'Roboto',Arial,sans-serif", fontSize: '8.5pt', fontWeight: 600,
+              cursor: status === 'loading' ? 'default' : 'pointer' }}>
+            {status === 'loading' ? '↻ Refreshing…' : '↻ Refresh'}
+          </button>
+        </div>
       </div>
+
+      {err && <div style={{ border: '1.5px solid #b3402f', background: '#fdecea', borderRadius: '8px', padding: '8px 12px', margin: '10px 0', fontSize: '9pt', color: '#8a2c20' }}>{err}</div>}
+      <ConflictBanner conflict={conflict} onReload={() => { setConflict(null); load(); }} onDismiss={() => setConflict(null)} />
+      {editMode && isAdmin && <div style={{ margin: '8px 0' }}><NewProjectForm onWrite={onWrite} busy={busy} /></div>}
+
       {groups.length === 0
         ? <p className="pv-sub">No project data found.</p>
         : <>
@@ -412,7 +663,11 @@ function ProjectsView({ data }) {
             {groups.map(g => (
               <div key={g.key}>
                 <div className="proj-group-hdr">{g.label}{g.note && <span className="proj-group-note">{g.note}</span>}</div>
-                {(g.projects || []).map((p, idx) => <ProjectCard key={p.name || idx} p={p} />)}
+                {(g.projects || []).map((p, idx) => (
+                  editMode
+                    ? <EditableProjectCard key={p.id || idx} p={p} isAdmin={isAdmin} onWrite={onWrite} busy={busy} />
+                    : <ProjectCard key={p.id || p.name || idx} p={p} />
+                ))}
               </div>
             ))}
             <div style={{ height: '50px' }} />
