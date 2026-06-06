@@ -1,0 +1,18 @@
+{
+  "name": "sta-help-center-index",
+  "version": "1.0.0",
+  "private": true,
+  "description": "STA Help Center hub - static React-in-HTML app plus Cloudflare Pages Functions (D1-backed Projects API, Phase B1 read path).",
+  "type": "module",
+  "scripts": {
+    "seed": "node scripts/json-to-seed.js",
+    "verify:local": "node scripts/verify-local.mjs",
+    "migrate:local": "wrangler d1 migrations apply sta-tracker --local",
+    "migrate:remote": "wrangler d1 migrations apply sta-tracker --remote",
+    "dev": "wrangler pages dev --binding LOCAL_DEV=1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240605.0",
+    "wrangler": "^4.0.0"
+  }
+}

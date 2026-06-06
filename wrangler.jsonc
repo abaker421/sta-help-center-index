@@ -1,0 +1,29 @@
+{
+  // Cloudflare Pages + Functions config for the STA Help Center hub.
+  // The hub deploys via the dashboard Git integration (push to main auto-deploys);
+  // this file exists so `wrangler pages dev` and `wrangler d1 migrations` work locally
+  // and so the D1 binding is declared in source. Phase B1 (read path only).
+  "name": "sta-help-center-index",
+  "compatibility_date": "2026-06-05",
+
+  // The static build output (the React-in-HTML app) is the repo root.
+  "pages_build_output_dir": ".",
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "sta-tracker",
+      // Fill these in from the Cloudflare dashboard after creating the databases
+      // (see the deploy checklist). Prefer database_name over binding in migration
+      // commands - the name is stable, the binding can change.
+      "database_id": "0d0ccef8-d909-40fb-aee7-65b6b17a9dbf",
+      "preview_database_id": "016c9c41-f1b9-4c48-9e26-9f85451d54b1",
+      "migrations_dir": "migrations"
+    }
+  ]
+
+  // NOTE: LOCAL_DEV is intentionally NOT declared here. It is passed only on the
+  // local CLI (`wrangler pages dev --binding LOCAL_DEV=1`) so the dev-only
+  // fake-identity branch in functions/api/_middleware.ts can never exist in the
+  // deployed (dashboard-configured) environment.
+}
