@@ -3,3 +3,8 @@ Thumbs.db
 *.log
 node_modules/
 .netlify/
+
+# Cloudflare Pages Functions / wrangler local state
+.wrangler/
+.dev.vars
+.live-api.json
