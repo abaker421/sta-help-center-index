@@ -1,4 +1,4 @@
-const CACHE = 'sta-hc-1780697739';
+const CACHE = 'sta-hc-1780765307';
 const PRECACHE = ['/', '/index.html', '/manifest.json',
   '/icons/icon-192.png', '/icons/icon-512.png'];
 
