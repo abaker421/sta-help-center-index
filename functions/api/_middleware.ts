@@ -13,10 +13,10 @@ import cloudflareAccessPlugin from "@cloudflare/pages-plugin-cloudflare-access";
 
 // ---- PLACEHOLDERS: fill from the Cloudflare Zero Trust dashboard -------------
 // Your team domain (Zero Trust > Settings > Custom Pages / team domain).
-const ACCESS_TEAM_DOMAIN = "https://REPLACE_TEAM.cloudflareaccess.com";
+const ACCESS_TEAM_DOMAIN = "https://school-tech.cloudflareaccess.com";
 // The Application Audience (AUD) tag of the Access application gating this hub
 // (Zero Trust > Access > Applications > [this app] > Overview).
-const ACCESS_APP_AUD = "REPLACE_WITH_APP_AUD";
+const ACCESS_APP_AUD = "3b211e7c1ccc6e71090cd412e1934a2141b5b02545a215119b6b68162d05d3f0";
 // -----------------------------------------------------------------------------
 
 // Server-side role allowlist. Adam is the only admin; every other @k12sta.com
