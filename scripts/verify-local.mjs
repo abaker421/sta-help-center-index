@@ -34,13 +34,13 @@ db.exec(read("migrations/0003_seed.sql"));
 const projects = db
   .prepare(
     `SELECT id, "group", name, status, status_class, stage, stage_class,
-            statusline, what_it_is, next_step, sort, updated_at
+            statusline, what_it_is, next_step, sort, version, updated_at
        FROM projects WHERE deleted_at IS NULL ORDER BY "group", sort`
   )
   .all();
 const items = db
   .prepare(
-    `SELECT id, project_id, text, stage, stage_class, meta, sort
+    `SELECT id, project_id, text, stage, stage_class, meta, sort, version
        FROM open_items WHERE deleted_at IS NULL ORDER BY project_id, sort, id`
   )
   .all();
@@ -57,6 +57,28 @@ const timeline = db
 
 const payload = assembleProjects({ projects, items, history, timeline });
 const expected = JSON.parse(read("data/project-data.json"));
+
+// B2 added `id` + `version` to every project and open_item in the payload. The B1
+// guarantee is that EVERY OTHER field stays byte-identical to project-data.json,
+// so strip the two new keys before the deep-equal (Decision 4: re-run the deep-equal
+// harness against the non-id/version fields).
+function stripIdVersion(groups) {
+  return groups.map((g) => ({
+    ...g,
+    projects: (g.projects || []).map((p) => {
+      const { id, version, openItems, ...rest } = p;
+      const out = { ...rest };
+      if (openItems) {
+        out.openItems = openItems.map((it) => {
+          const { id: _i, version: _v, ...itRest } = it;
+          return itRest;
+        });
+      }
+      return out;
+    }),
+  }));
+}
+const payloadGroupsStripped = stripIdVersion(payload.groups);
 
 let failures = 0;
 const check = (name, fn) => {
@@ -85,8 +107,20 @@ check("source matches the live feed", () => {
 check("stageLegend matches exactly", () => {
   assert.deepStrictEqual(payload.stageLegend, expected.stageLegend);
 });
-check("groups (key/label/note + every project) match the live feed exactly", () => {
-  assert.deepStrictEqual(payload.groups, expected.groups);
+check("groups (key/label/note + every project) match the live feed exactly (id/version stripped)", () => {
+  assert.deepStrictEqual(payloadGroupsStripped, expected.groups);
+});
+check("every project + open_item now carries numeric id and version (B2)", () => {
+  for (const g of payload.groups) {
+    for (const p of g.projects) {
+      assert.equal(typeof p.id, "number", "project id");
+      assert.equal(typeof p.version, "number", "project version");
+      for (const it of p.openItems || []) {
+        assert.equal(typeof it.id, "number", "open_item id");
+        assert.equal(typeof it.version, "number", "open_item version");
+      }
+    }
+  }
 });
 check("project + open-item counts match the feed", () => {
   const projCount = (g) => g.reduce((n, grp) => n + grp.projects.length, 0);

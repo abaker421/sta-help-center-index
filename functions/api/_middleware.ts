@@ -51,10 +51,20 @@ function toAppUser(payload: any): AppUser {
 // CLI (`wrangler pages dev --binding LOCAL_DEV=1`).
 export const onRequest: PagesFunction = async (context) => {
   if (context.env.LOCAL_DEV === "1") {
+    // Dev-only fake identity (admin by default). Optionally overridable via X-Dev-*
+    // headers so local write tests can simulate a member or a different operator
+    // (STEP 4: member -> 403 on admin-only writes). These headers are honored ONLY
+    // under LOCAL_DEV, which is never set in the deployed Pages environment, so they
+    // can never spoof identity in production. Never read identity from a header in
+    // the real (JWT) branch below.
+    const h = context.request.headers;
+    const email = (h.get("X-Dev-Email") || "adamb@k12sta.com").toLowerCase();
+    let role: AppUser["role"] = ADMINS.has(email) ? "admin" : "member";
+    if (h.get("X-Dev-Role") === "member") role = "member";
     context.data.user = {
-      email: "adamb@k12sta.com",
+      email,
       kind: "human",
-      role: "admin",
+      role,
       agent_name: null,
     } satisfies AppUser;
     return context.next();

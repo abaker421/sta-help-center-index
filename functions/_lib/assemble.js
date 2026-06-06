@@ -54,7 +54,10 @@ export function assembleProjects({ projects = [], items = [], history = [], time
 
     // Build only the keys the live payload carries for this project kind, so the
     // shape matches the static project-data.json exactly (dev vs ops differ).
-    const p = { name: row.name, status: row.status, statusClass: row.status_class };
+    // B2: `id` + `version` are carried so the edit UI can address the row and send
+    // expected_version. They are additive - every other field stays byte-identical
+    // to B1 (the read harness strips id/version before its deep-equal).
+    const p = { id: row.id, version: row.version, name: row.name, status: row.status, statusClass: row.status_class };
     if (row.stage != null) {
       p.stage = row.stage;
       p.stageClass = row.stage_class;
@@ -68,7 +71,8 @@ export function assembleProjects({ projects = [], items = [], history = [], time
     }
 
     p.openItems = (itemsByProject.get(row.id) || []).map((it) => {
-      const o = { text: it.text, meta: it.meta ?? "" };
+      // B2: id + version carried per open_item (compare-and-set + addressing).
+      const o = { id: it.id, version: it.version, text: it.text, meta: it.meta ?? "" };
       if (it.stage != null) {
         o.stage = it.stage;
         o.stageClass = it.stage_class;
