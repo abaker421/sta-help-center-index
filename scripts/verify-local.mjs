@@ -40,7 +40,7 @@ const projects = db
   .all();
 const items = db
   .prepare(
-    `SELECT id, project_id, text, stage, stage_class, meta, sort, version
+    `SELECT id, project_id, text, stage, stage_class, meta, done, sort, version
        FROM open_items WHERE deleted_at IS NULL ORDER BY project_id, sort, id`
   )
   .all();
@@ -58,11 +58,11 @@ const timeline = db
 const payload = assembleProjects({ projects, items, history, timeline });
 const expected = JSON.parse(read("data/project-data.json"));
 
-// B2 added `id` + `version` to every project and open_item in the payload. The B1
-// guarantee is that EVERY OTHER field stays byte-identical to project-data.json,
-// so strip the two new keys before the deep-equal (Decision 4: re-run the deep-equal
-// harness against the non-id/version fields).
-function stripIdVersion(groups) {
+// B2 added `id` + `version` to every project/open_item and `done` to every
+// open_item in the payload. The B1 guarantee is that EVERY OTHER field stays
+// byte-identical to project-data.json, so strip the B2-added keys before the
+// deep-equal (Decision 4: re-run the deep-equal harness against the other fields).
+function stripB2Keys(groups) {
   return groups.map((g) => ({
     ...g,
     projects: (g.projects || []).map((p) => {
@@ -70,7 +70,7 @@ function stripIdVersion(groups) {
       const out = { ...rest };
       if (openItems) {
         out.openItems = openItems.map((it) => {
-          const { id: _i, version: _v, ...itRest } = it;
+          const { id: _i, version: _v, done: _d, ...itRest } = it;
           return itRest;
         });
       }
@@ -78,7 +78,7 @@ function stripIdVersion(groups) {
     }),
   }));
 }
-const payloadGroupsStripped = stripIdVersion(payload.groups);
+const payloadGroupsStripped = stripB2Keys(payload.groups);
 
 let failures = 0;
 const check = (name, fn) => {

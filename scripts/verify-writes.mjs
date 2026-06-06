@@ -95,7 +95,7 @@ function assembleNow() {
     .all();
   const items = raw
     .prepare(
-      `SELECT id, project_id, text, stage, stage_class, meta, sort, version
+      `SELECT id, project_id, text, stage, stage_class, meta, done, sort, version
          FROM open_items WHERE deleted_at IS NULL ORDER BY project_id, sort, id`
     )
     .all();

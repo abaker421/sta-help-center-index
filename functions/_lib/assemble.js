@@ -71,8 +71,10 @@ export function assembleProjects({ projects = [], items = [], history = [], time
     }
 
     p.openItems = (itemsByProject.get(row.id) || []).map((it) => {
-      // B2: id + version carried per open_item (compare-and-set + addressing).
-      const o = { id: it.id, version: it.version, text: it.text, meta: it.meta ?? "" };
+      // B2: id + version (compare-and-set + addressing) and done (so the edit UI's
+      // done checkbox reflects persisted state) carried per open_item. done is
+      // emitted as a boolean for the UI; stored 0/1 in D1.
+      const o = { id: it.id, version: it.version, text: it.text, meta: it.meta ?? "", done: !!it.done };
       if (it.stage != null) {
         o.stage = it.stage;
         o.stageClass = it.stage_class;

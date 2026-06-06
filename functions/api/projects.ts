@@ -28,8 +28,9 @@ export const onRequestGet: PagesFunction = async ({ env }) => {
           ORDER BY "group", sort`
       ),
       env.DB.prepare(
-        // B2: `version` added (compare-and-set on open_items).
-        `SELECT id, project_id, text, stage, stage_class, meta, sort, version
+        // B2: `version` (compare-and-set) + `done` (so the edit UI's done checkbox
+        // reflects persisted state, not just write-and-forget) added on open_items.
+        `SELECT id, project_id, text, stage, stage_class, meta, done, sort, version
            FROM open_items
           WHERE deleted_at IS NULL
           ORDER BY project_id, sort, id`
