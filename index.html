@@ -129,6 +129,8 @@ body{font-family:'Roboto',Arial,sans-serif;font-size:10pt;color:#222;background:
 .pd-when{font-weight:700;color:#0a6aa6;min-width:120px;flex-shrink:0;font-variant-numeric:tabular-nums}
 .pd-item{padding:4px 0;font-size:9pt;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
 .pd-item .who{color:#8a8d8e;font-size:8.5pt}
+.proj-edit-btn{margin-left:auto;background:#fff;border:1px solid #cdd6e3;border-radius:6px;color:#0a6aa6;cursor:pointer;font-family:'Roboto',Arial,sans-serif;font-size:8pt;font-weight:600;padding:3px 9px;line-height:1.3;flex-shrink:0;transition:background .12s,border-color .12s}
+.proj-edit-btn:hover{background:#eef4fb;border-color:#0a6aa6}
 </style>
 </head>
 <body>
@@ -313,7 +315,7 @@ function FavoritesView({ favs, onToggleFav }) {
 }
 
 // -- Projects zone: project-centric view rendered from window.PROJECT_DATA (separate from article data)
-function ProjectCard({ p }) {
+function ProjectCard({ p, canEdit, onEdit }) {
   const hasDetail = !!(p.whatItIs || (p.stageHistory && p.stageHistory.length) ||
     (p.openItems && p.openItems.length) || (p.timeline && p.timeline.length) || p.next);
   return (
@@ -322,6 +324,10 @@ function ProjectCard({ p }) {
         <span className="proj-name">{p.name}</span>
         {p.status && <span className={"pill " + (p.statusClass || 'info')}>{p.status}</span>}
         {p.stage && <span className={"stg " + (p.stageClass || 'none')}>{p.stage}</span>}
+        {canEdit && (
+          <button type="button" className="proj-edit-btn" title="Edit this project"
+            aria-label={"Edit project " + p.name} onClick={onEdit}>&#9998; Edit</button>
+        )}
       </div>
       {p.statusline && <p className="proj-statusline">{p.statusline}</p>}
       {hasDetail && (
@@ -401,21 +407,18 @@ function ConflictBanner({ conflict, onReload, onDismiss }) {
   );
 }
 
-function EditableItem({ it, hasStage, onWrite, busy }) {
-  const seed = () => ({ text: it.text || '', meta: it.meta || '', stage: it.stage || '', stage_class: it.stageClass || 'none' });
-  const [d, setD] = useState(seed);
-  useEffect(() => { setD(seed()); }, [it]); // re-seed after a reload replaces the row
-  const ch = (k) => (e) => setD(s => ({ ...s, [k]: e.target.value }));
-  const save = () => {
-    const body = { expected_version: it.version };
-    if (d.text !== (it.text || '')) body.text = d.text;
-    if (d.meta !== (it.meta || '')) body.meta = d.meta;
-    if (hasStage) {
-      if (d.stage !== (it.stage || '')) body.stage = d.stage;
-      if (d.stage_class !== (it.stageClass || 'none')) body.stage_class = d.stage_class;
-    }
-    if (Object.keys(body).length > 1) onWrite('PATCH', '/api/items/' + it.id, body);
-  };
+// Presentational row for an existing open item. Fully controlled by the parent
+// card's draft state - every change is batched and committed by the card's Save.
+function EditableItemRow({ d, hasStage, disabled, onChange, onToggleRemove }) {
+  if (d.removed) {
+    return (
+      <div className="pd-item" style={{ borderTop: '1px dashed #e3e6e8', paddingTop: '6px', alignItems: 'center' }}>
+        <span style={{ textDecoration: 'line-through', color: '#9a2727', flex: 1 }}>{d.text || '(item)'} &mdash; will be removed on Save</span>
+        <button type="button" style={EDIT_BTN_GHOST} disabled={disabled} onClick={onToggleRemove}>Undo</button>
+      </div>
+    );
+  }
+  const ch = (k) => (e) => onChange(k, e.target.value);
   return (
     <div className="pd-item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '4px', borderTop: '1px dashed #e3e6e8', paddingTop: '6px' }}>
       <input style={EDIT_INPUT} value={d.text} onChange={ch('text')} placeholder="Item text" />
@@ -427,126 +430,218 @@ function EditableItem({ it, hasStage, onWrite, busy }) {
             {STAGE_CLASSES.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
         </>}
-        {/* Controlled done checkbox: reflects persisted state (GET payload carries
-            done) and PATCHes the toggle (audited server-side) with the row version. */}
+        {/* Controlled done checkbox - reflects the draft; PATCHed (audited, with the
+            row version) when the card's Save runs. */}
         <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '8.5pt', color: '#5a5d5e', whiteSpace: 'nowrap' }}>
-          <input type="checkbox" disabled={busy} checked={!!it.done}
-            onChange={(e) => onWrite('PATCH', '/api/items/' + it.id, { expected_version: it.version, done: e.target.checked })} />
+          <input type="checkbox" disabled={disabled} checked={!!d.done} onChange={e => onChange('done', e.target.checked)} />
           done
         </label>
-        <button type="button" style={EDIT_BTN_GHOST} disabled={busy} onClick={save}>Save</button>
-        <button type="button" style={EDIT_BTN_DANGER} disabled={busy}
-          onClick={() => { if (window.confirm('Remove this item?')) onWrite('DELETE', '/api/items/' + it.id, { expected_version: it.version }); }}>Remove</button>
+        <button type="button" style={EDIT_BTN_DANGER} disabled={disabled} onClick={onToggleRemove}>Remove</button>
       </div>
     </div>
   );
 }
 
-function AddItemForm({ projectId, onWrite, busy }) {
-  const [text, setText] = useState('');
-  const [meta, setMeta] = useState('');
-  const add = async () => {
-    if (!text.trim()) return;
-    const r = await onWrite('POST', '/api/projects/' + projectId + '/items', { text: text.trim(), meta: meta.trim() });
-    if (r && r.ok) { setText(''); setMeta(''); }
-  };
+// Presentational row for a queued NEW open item (POSTed by the card's Save).
+function NewItemRow({ n, disabled, onChange, onRemove }) {
   return (
-    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
-      <input style={{ ...EDIT_INPUT, flex: '2 1 150px', width: 'auto' }} value={text} onChange={e => setText(e.target.value)} placeholder="New open item" />
-      <input style={{ ...EDIT_INPUT, flex: '1 1 100px', width: 'auto' }} value={meta} onChange={e => setMeta(e.target.value)} placeholder="who / when" />
-      <button type="button" style={EDIT_BTN} disabled={busy || !text.trim()} onClick={add}>Add item</button>
+    <div className="pd-item" style={{ borderTop: '1px dashed #e3e6e8', paddingTop: '6px', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+      <input style={{ ...EDIT_INPUT, flex: '2 1 150px', width: 'auto' }} value={n.text} onChange={e => onChange('text', e.target.value)} placeholder="New open item" />
+      <input style={{ ...EDIT_INPUT, flex: '1 1 100px', width: 'auto' }} value={n.meta} onChange={e => onChange('meta', e.target.value)} placeholder="who / when" />
+      <button type="button" style={EDIT_BTN_GHOST} disabled={disabled} onClick={onRemove}>Remove</button>
     </div>
   );
 }
 
-function AddTimelineForm({ projectId, onWrite, busy }) {
-  const [when, setWhen] = useState('');
-  const [note, setNote] = useState('');
-  const add = async () => {
-    if (!when.trim() || !note.trim()) return;
-    const r = await onWrite('POST', '/api/projects/' + projectId + '/timeline', { when_label: when.trim(), note: note.trim() });
-    if (r && r.ok) { setWhen(''); setNote(''); }
-  };
+// Presentational row for a queued NEW timeline note (POSTed by the card's Save).
+function NewNoteRow({ n, disabled, onChange, onRemove }) {
   return (
-    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
-      <input style={{ ...EDIT_INPUT, flex: '0 1 80px', width: 'auto' }} value={when} onChange={e => setWhen(e.target.value)} placeholder="when (6/6)" />
-      <input style={{ ...EDIT_INPUT, flex: '2 1 150px', width: 'auto' }} value={note} onChange={e => setNote(e.target.value)} placeholder="note" />
-      <button type="button" style={EDIT_BTN} disabled={busy || !when.trim() || !note.trim()} onClick={add}>Add note</button>
+    <div className="pd-item" style={{ borderTop: '1px dashed #e3e6e8', paddingTop: '6px', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+      <input style={{ ...EDIT_INPUT, flex: '0 1 80px', width: 'auto' }} value={n.when} onChange={e => onChange('when', e.target.value)} placeholder="when (6/6)" />
+      <input style={{ ...EDIT_INPUT, flex: '2 1 150px', width: 'auto' }} value={n.note} onChange={e => onChange('note', e.target.value)} placeholder="note" />
+      <button type="button" style={EDIT_BTN_GHOST} disabled={disabled} onClick={onRemove}>Remove</button>
     </div>
   );
 }
 
-function EditableProjectCard({ p, isAdmin, onWrite, busy }) {
+// Per-card batched editor (one card edits at a time). The pencil on a read-view
+// card flips ONLY that card here. All edits live in local draft state and commit
+// together on Save (project fields, then existing-item edits/removals, then queued
+// new items + timeline notes); Cancel discards the draft. Every write carries
+// expected_version; a 409 surfaces the card-scoped ConflictBanner and stops the
+// batch. onWrite is a pure passthrough - the card reloads the live list itself on
+// success. onDirty reports unsaved state up so the parent can guard tab switches.
+function EditableProjectCard({ p, isAdmin, onWrite, reload, onDone, onDirty }) {
   const hasStage = p.stage != null; // dev projects carry a stage tag; ops do not
-  const seed = () => ({ status: p.status || '', status_class: p.statusClass || 'info', stage: p.stage || '', stage_class: p.stageClass || 'none', statusline: p.statusline || '', next_step: p.next || '' });
-  const [d, setD] = useState(seed);
-  useEffect(() => { setD(seed()); }, [p]); // re-seed after a reload replaces the row
-  const ch = (k) => (e) => setD(s => ({ ...s, [k]: e.target.value }));
-  const saveProject = () => {
-    const body = { expected_version: p.version };
-    if (d.status !== (p.status || '')) body.status = d.status;
-    if (d.status_class !== (p.statusClass || 'info')) body.status_class = d.status_class;
-    if (d.statusline !== (p.statusline || '')) body.statusline = d.statusline;
-    if (d.next_step !== (p.next || '')) body.next_step = d.next_step;
-    if (hasStage) {
-      if (d.stage !== (p.stage || '')) body.stage = d.stage;
-      if (d.stage_class !== (p.stageClass || 'none')) body.stage_class = d.stage_class;
+  const seedProject = () => ({ status: p.status || '', status_class: p.statusClass || 'info', stage: p.stage || '', stage_class: p.stageClass || 'none', statusline: p.statusline || '', next_step: p.next || '' });
+  const seedItems = () => (p.openItems || []).map(it => ({
+    id: it.id, version: it.version,
+    text: it.text || '', meta: it.meta || '', stage: it.stage || '', stage_class: it.stageClass || 'none', done: !!it.done, removed: false,
+    _o: { text: it.text || '', meta: it.meta || '', stage: it.stage || '', stage_class: it.stageClass || 'none', done: !!it.done },
+  }));
+  const [proj, setProj] = useState(seedProject);
+  const [items, setItems] = useState(seedItems);
+  const [newItems, setNewItems] = useState([]);
+  const [newNotes, setNewNotes] = useState([]);
+  const [conflict, setConflict] = useState(null);
+  const [err, setErr] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const keyRef = useRef(1);
+
+  // Re-seed when the underlying row changes (e.g. after a conflict reload swaps in fresh versions).
+  useEffect(() => {
+    setProj(seedProject()); setItems(seedItems()); setNewItems([]); setNewNotes([]); setConflict(null); setErr(null);
+  }, [p]);
+
+  const chProj = (k) => (e) => setProj(s => ({ ...s, [k]: e.target.value }));
+  const updItem = (i, k, v) => setItems(a => a.map((it, idx) => idx === i ? { ...it, [k]: v } : it));
+  const addNewItem = () => setNewItems(a => [...a, { key: keyRef.current++, text: '', meta: '' }]);
+  const chNewItem = (i, k, v) => setNewItems(a => a.map((n, idx) => idx === i ? { ...n, [k]: v } : n));
+  const rmNewItem = (i) => setNewItems(a => a.filter((_, idx) => idx !== i));
+  const addNewNote = () => setNewNotes(a => [...a, { key: keyRef.current++, when: '', note: '' }]);
+  const chNewNote = (i, k, v) => setNewNotes(a => a.map((n, idx) => idx === i ? { ...n, [k]: v } : n));
+  const rmNewNote = (i) => setNewNotes(a => a.filter((_, idx) => idx !== i));
+
+  const projDirty =
+    proj.status !== (p.status || '') || proj.status_class !== (p.statusClass || 'info') ||
+    proj.statusline !== (p.statusline || '') || proj.next_step !== (p.next || '') ||
+    (hasStage && (proj.stage !== (p.stage || '') || proj.stage_class !== (p.stageClass || 'none')));
+  const itemsDirty = items.some(it => it.removed || it.text !== it._o.text || it.meta !== it._o.meta || it.done !== it._o.done || (hasStage && (it.stage !== it._o.stage || it.stage_class !== it._o.stage_class)));
+  const addsDirty = newItems.some(n => n.text.trim()) || newNotes.some(n => n.when.trim() && n.note.trim());
+  const dirty = projDirty || itemsDirty || addsDirty;
+  useEffect(() => { onDirty(dirty); }, [dirty]);
+
+  const save = async () => {
+    setSaving(true); setErr(null); setConflict(null);
+    const fail = (r) => {
+      if (r.status === 409) { setConflict({ current: r.data && r.data.current }); return true; }
+      if (!r.ok) { setErr((r.data && r.data.error) || ('write failed (HTTP ' + r.status + ')')); return true; }
+      return false;
+    };
+    if (projDirty) {
+      const body = { expected_version: p.version };
+      if (proj.status !== (p.status || '')) body.status = proj.status;
+      if (proj.status_class !== (p.statusClass || 'info')) body.status_class = proj.status_class;
+      if (proj.statusline !== (p.statusline || '')) body.statusline = proj.statusline;
+      if (proj.next_step !== (p.next || '')) body.next_step = proj.next_step;
+      if (hasStage) {
+        if (proj.stage !== (p.stage || '')) body.stage = proj.stage;
+        if (proj.stage_class !== (p.stageClass || 'none')) body.stage_class = proj.stage_class;
+      }
+      const r = await onWrite('PATCH', '/api/projects/' + p.id, body);
+      if (fail(r)) { setSaving(false); return; }
     }
-    if (Object.keys(body).length > 1) onWrite('PATCH', '/api/projects/' + p.id, body);
+    for (const it of items) {
+      if (it.removed) {
+        const r = await onWrite('DELETE', '/api/items/' + it.id, { expected_version: it.version });
+        if (fail(r)) { setSaving(false); return; }
+        continue;
+      }
+      const body = { expected_version: it.version };
+      if (it.text !== it._o.text) body.text = it.text;
+      if (it.meta !== it._o.meta) body.meta = it.meta;
+      if (it.done !== it._o.done) body.done = it.done;
+      if (hasStage) {
+        if (it.stage !== it._o.stage) body.stage = it.stage;
+        if (it.stage_class !== it._o.stage_class) body.stage_class = it.stage_class;
+      }
+      if (Object.keys(body).length > 1) {
+        const r = await onWrite('PATCH', '/api/items/' + it.id, body);
+        if (fail(r)) { setSaving(false); return; }
+      }
+    }
+    for (const n of newItems) {
+      if (!n.text.trim()) continue;
+      const r = await onWrite('POST', '/api/projects/' + p.id + '/items', { text: n.text.trim(), meta: n.meta.trim() });
+      if (fail(r)) { setSaving(false); return; }
+    }
+    for (const n of newNotes) {
+      if (!n.when.trim() || !n.note.trim()) continue;
+      const r = await onWrite('POST', '/api/projects/' + p.id + '/timeline', { when_label: n.when.trim(), note: n.note.trim() });
+      if (fail(r)) { setSaving(false); return; }
+    }
+    setSaving(false);
+    onDirty(false);
+    await reload();
+    onDone();
   };
+
+  const cancel = () => { onDirty(false); onDone(); };
+
+  const delProject = async () => {
+    if (!window.confirm('Soft-delete project "' + p.name + '"? It can be restored from the audit trail.')) return;
+    setSaving(true);
+    const r = await onWrite('DELETE', '/api/projects/' + p.id, { expected_version: p.version });
+    setSaving(false);
+    if (r.status === 409) { setConflict({ current: r.data && r.data.current }); return; }
+    if (!r.ok) { setErr((r.data && r.data.error) || ('delete failed (HTTP ' + r.status + ')')); return; }
+    onDirty(false); await reload(); onDone();
+  };
+
   return (
     <div className="proj-card"><div className="proj-card-body">
       <div className="proj-top">
         <span className="proj-name">{p.name}</span>
         <span className="who" style={{ fontSize: '8pt', color: '#9aa3a8' }}>v{p.version}</span>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px' }}>
+          <button type="button" style={EDIT_BTN} disabled={saving} onClick={save}>{saving ? 'Saving…' : 'Save'}</button>
+          <button type="button" style={EDIT_BTN_GHOST} disabled={saving} onClick={cancel}>Cancel</button>
+        </div>
       </div>
+
+      <ConflictBanner conflict={conflict} onReload={() => { setConflict(null); reload(); }} onDismiss={() => setConflict(null)} />
+      {err && <div style={{ border: '1.5px solid #b3402f', background: '#fdecea', borderRadius: '8px', padding: '8px 12px', margin: '10px 0', fontSize: '9pt', color: '#8a2c20' }}>{err}</div>}
+
       <div style={{ display: 'grid', gap: '6px', marginTop: '6px' }}>
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-          <input style={{ ...EDIT_INPUT, flex: '2 1 150px', width: 'auto' }} value={d.status} onChange={ch('status')} placeholder="status" />
-          <select style={{ ...EDIT_INPUT, flex: '0 1 84px', width: 'auto' }} value={d.status_class} onChange={ch('status_class')}>
+          <input style={{ ...EDIT_INPUT, flex: '2 1 150px', width: 'auto' }} value={proj.status} onChange={chProj('status')} placeholder="status" />
+          <select style={{ ...EDIT_INPUT, flex: '0 1 84px', width: 'auto' }} value={proj.status_class} onChange={chProj('status_class')}>
             {STATUS_CLASSES.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
         {hasStage && (
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-            <input style={{ ...EDIT_INPUT, flex: '2 1 150px', width: 'auto' }} value={d.stage} onChange={ch('stage')} placeholder="stage" />
-            <select style={{ ...EDIT_INPUT, flex: '0 1 84px', width: 'auto' }} value={d.stage_class} onChange={ch('stage_class')}>
+            <input style={{ ...EDIT_INPUT, flex: '2 1 150px', width: 'auto' }} value={proj.stage} onChange={chProj('stage')} placeholder="stage" />
+            <select style={{ ...EDIT_INPUT, flex: '0 1 84px', width: 'auto' }} value={proj.stage_class} onChange={chProj('stage_class')}>
               {STAGE_CLASSES.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
         )}
-        <textarea style={{ ...EDIT_INPUT, minHeight: '38px', resize: 'vertical' }} value={d.statusline} onChange={ch('statusline')} placeholder="status line" />
-        <input style={EDIT_INPUT} value={d.next_step} onChange={ch('next_step')} placeholder="next step (optional)" />
-        <div><button type="button" style={EDIT_BTN} disabled={busy} onClick={saveProject}>Save project</button></div>
+        <textarea style={{ ...EDIT_INPUT, minHeight: '38px', resize: 'vertical' }} value={proj.statusline} onChange={chProj('statusline')} placeholder="status line" />
+        <input style={EDIT_INPUT} value={proj.next_step} onChange={chProj('next_step')} placeholder="next step (optional)" />
       </div>
 
       <span className="pd-lbl" style={{ marginTop: '10px' }}>Open items</span>
-      {(p.openItems || []).map((it, i) => <EditableItem key={it.id || i} it={it} hasStage={hasStage} onWrite={onWrite} busy={busy} />)}
-      <AddItemForm projectId={p.id} onWrite={onWrite} busy={busy} />
+      {items.map((it, i) => <EditableItemRow key={it.id || i} d={it} hasStage={hasStage} disabled={saving} onChange={(k, v) => updItem(i, k, v)} onToggleRemove={() => updItem(i, 'removed', !it.removed)} />)}
+      {newItems.map((n, i) => <NewItemRow key={n.key} n={n} disabled={saving} onChange={(k, v) => chNewItem(i, k, v)} onRemove={() => rmNewItem(i)} />)}
+      <div style={{ marginTop: '6px' }}><button type="button" style={EDIT_BTN_GHOST} disabled={saving} onClick={addNewItem}>+ Add open item</button></div>
 
-      <span className="pd-lbl" style={{ marginTop: '10px' }}>Add timeline note</span>
-      <AddTimelineForm projectId={p.id} onWrite={onWrite} busy={busy} />
+      <span className="pd-lbl" style={{ marginTop: '10px' }}>Timeline notes to add</span>
+      {newNotes.map((n, i) => <NewNoteRow key={n.key} n={n} disabled={saving} onChange={(k, v) => chNewNote(i, k, v)} onRemove={() => rmNewNote(i)} />)}
+      <div style={{ marginTop: '6px' }}><button type="button" style={EDIT_BTN_GHOST} disabled={saving} onClick={addNewNote}>+ Add timeline note</button></div>
 
       {isAdmin && (
         <div style={{ marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '8px' }}>
-          <button type="button" style={EDIT_BTN_DANGER} disabled={busy}
-            onClick={() => { if (window.confirm('Soft-delete project "' + p.name + '"? It can be restored from the audit trail.')) onWrite('DELETE', '/api/projects/' + p.id, { expected_version: p.version }); }}>
-            Delete project (admin)
-          </button>
+          <button type="button" style={EDIT_BTN_DANGER} disabled={saving} onClick={delProject}>Delete project (admin)</button>
         </div>
       )}
     </div></div>
   );
 }
 
-function NewProjectForm({ onWrite, busy }) {
+function NewProjectForm({ onWrite, reload }) {
   const [open, setOpen] = useState(false);
   const [f, setF] = useState({ group: 'dev', name: '', status: '' });
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(null);
   const ch = (k) => (e) => setF(s => ({ ...s, [k]: e.target.value }));
   const create = async () => {
     if (!f.name.trim() || !f.status.trim()) return;
+    setBusy(true); setErr(null);
     const r = await onWrite('POST', '/api/projects', { group: f.group, name: f.name.trim(), status: f.status.trim() });
-    if (r && r.ok) { setF({ group: 'dev', name: '', status: '' }); setOpen(false); }
+    setBusy(false);
+    if (!r.ok) { setErr((r.data && r.data.error) || ('create failed (HTTP ' + r.status + ')')); return; }
+    setF({ group: 'dev', name: '', status: '' }); setOpen(false); await reload();
   };
   if (!open) return <button type="button" style={EDIT_BTN_GHOST} onClick={() => setOpen(true)}>+ New project (admin)</button>;
   return (
@@ -558,30 +653,32 @@ function NewProjectForm({ onWrite, busy }) {
         <input style={EDIT_INPUT} value={f.name} onChange={ch('name')} placeholder="Project name" />
       </div>
       <input style={EDIT_INPUT} value={f.status} onChange={ch('status')} placeholder="Status" />
+      {err && <div style={{ fontSize: '8.5pt', color: '#8a2c20' }}>{err}</div>}
       <div style={{ display: 'flex', gap: '6px' }}>
-        <button type="button" style={EDIT_BTN} disabled={busy || !f.name.trim() || !f.status.trim()} onClick={create}>Create</button>
-        <button type="button" style={EDIT_BTN_GHOST} onClick={() => setOpen(false)}>Cancel</button>
+        <button type="button" style={EDIT_BTN} disabled={busy || !f.name.trim() || !f.status.trim()} onClick={create}>{busy ? 'Creating…' : 'Create'}</button>
+        <button type="button" style={EDIT_BTN_GHOST} disabled={busy} onClick={() => { setOpen(false); setErr(null); }}>Cancel</button>
       </div>
     </div>
   );
 }
 
 function ProjectsView({ data }) {
-  // Phase B1 read path + Phase B2 inline editing. First paint from the baked
-  // window.PROJECT_DATA (offline / first-paint fallback, READ ONLY); then fetch the
-  // gated D1-backed API for live data and editing. Edits go through PATCH/POST/DELETE
-  // on /api/*; every project / open-item PATCH sends the row's `version` as
-  // expected_version, and a 409 surfaces a reconcile banner (never auto-overwrites).
-  // Role comes from GET /api/me (the server still enforces it on every write); the
-  // edit toggle shows for any signed-in user and admin-only controls hide for members.
+  // Phase B1 read path + Phase B2 inline editing, now PER-CARD. First paint from the
+  // baked window.PROJECT_DATA (offline / first-paint fallback, READ ONLY); then fetch
+  // the gated D1-backed API for live data and editing. There is no global edit toggle:
+  // each read-view card carries its own pencil that flips ONLY that card into edit
+  // mode (one card at a time). Edits batch and commit on the card's Save via
+  // PATCH/POST/DELETE on /api/*; every project / open-item write sends the row's
+  // `version` as expected_version, and a 409 surfaces a card-scoped reconcile banner
+  // (never auto-overwrites). Role comes from GET /api/me (the server still enforces it
+  // on every write); create-project (top-level) and delete-project (in-card) hide for
+  // non-admins as a courtesy only.
   const [pdata, setPdata] = useState(data || {});
   const [updated, setUpdated] = useState((data && data.generated) || null);
   const [status, setStatus] = useState('idle'); // idle | loading | error
   const [me, setMe] = useState(null);
-  const [editMode, setEditMode] = useState(false);
-  const [conflict, setConflict] = useState(null);
-  const [err, setErr] = useState(null);
-  const [busy, setBusy] = useState(false);
+  const [editingId, setEditingId] = useState(null); // id of the one card in edit mode
+  const dirtyRef = useRef(false); // tracks whether the editing card has unsaved changes
 
   const load = useCallback(() => {
     setStatus('loading');
@@ -598,18 +695,21 @@ function ProjectsView({ data }) {
       .then(r => r.ok ? r.json() : null).then(u => setMe(u)).catch(() => setMe(null));
   }, []);
 
-  // Run a write, then reconcile: 409 -> conflict banner; other failure -> error;
-  // success -> clear and re-fetch the live list so versions advance everywhere.
-  const onWrite = useCallback(async (method, path, body) => {
-    setBusy(true);
-    const r = await apiWrite(method, path, body);
-    setBusy(false);
-    if (r.status === 409) { setConflict({ current: r.data && r.data.current }); return r; }
-    if (!r.ok) { setErr((r.data && r.data.error) || ('write failed (HTTP ' + r.status + ')')); return r; }
-    setErr(null); setConflict(null);
-    await load();
-    return r;
-  }, [load]);
+  // Pure write passthrough - the card (or NewProjectForm) reconciles 409 / errors
+  // locally and reloads the live list itself on success.
+  const onWrite = useCallback((method, path, body) => apiWrite(method, path, body), []);
+
+  // Enter edit on a card. Only one card edits at a time: if another card is mid-edit
+  // with unsaved changes, prompt before discarding it.
+  const requestEdit = useCallback((id) => {
+    if (editingId != null && editingId !== id && dirtyRef.current) {
+      if (!window.confirm('You have unsaved changes in another project. Discard them and edit this one instead?')) return;
+    }
+    dirtyRef.current = false;
+    setEditingId(id);
+  }, [editingId]);
+  const stopEdit = useCallback(() => { dirtyRef.current = false; setEditingId(null); }, []);
+  const setDirty = useCallback((b) => { dirtyRef.current = b; }, []);
 
   const isAdmin = !!(me && me.role === 'admin');
   const canEdit = !!me; // any signed-in @k12sta identity may edit content
@@ -628,14 +728,6 @@ function ProjectsView({ data }) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '8px', flexShrink: 0, marginTop: '4px' }}>
-          {canEdit && (
-            <button type="button" onClick={() => { setEditMode(e => !e); setConflict(null); setErr(null); }}
-              style={{ padding: '7px 14px', borderRadius: '16px', border: '1.5px solid #006098',
-                background: editMode ? '#006098' : '#fff', color: editMode ? '#fff' : '#006098',
-                fontFamily: "'Roboto',Arial,sans-serif", fontSize: '8.5pt', fontWeight: 600, cursor: 'pointer' }}>
-              {editMode ? '✓ Editing' : '✎ Edit'}
-            </button>
-          )}
           <button type="button" onClick={load} disabled={status === 'loading'}
             style={{ padding: '7px 14px', borderRadius: '16px',
               border: '1.5px solid #006098', background: '#fff', color: '#006098',
@@ -646,9 +738,8 @@ function ProjectsView({ data }) {
         </div>
       </div>
 
-      {err && <div style={{ border: '1.5px solid #b3402f', background: '#fdecea', borderRadius: '8px', padding: '8px 12px', margin: '10px 0', fontSize: '9pt', color: '#8a2c20' }}>{err}</div>}
-      <ConflictBanner conflict={conflict} onReload={() => { setConflict(null); load(); }} onDismiss={() => setConflict(null)} />
-      {editMode && isAdmin && <div style={{ margin: '8px 0' }}><NewProjectForm onWrite={onWrite} busy={busy} /></div>}
+      {/* Create-project is a top-level admin action (server still enforces role). */}
+      {isAdmin && <div style={{ margin: '10px 0' }}><NewProjectForm onWrite={onWrite} reload={load} /></div>}
 
       {groups.length === 0
         ? <p className="pv-sub">No project data found.</p>
@@ -664,9 +755,11 @@ function ProjectsView({ data }) {
               <div key={g.key}>
                 <div className="proj-group-hdr">{g.label}{g.note && <span className="proj-group-note">{g.note}</span>}</div>
                 {(g.projects || []).map((p, idx) => (
-                  editMode
-                    ? <EditableProjectCard key={p.id || idx} p={p} isAdmin={isAdmin} onWrite={onWrite} busy={busy} />
-                    : <ProjectCard key={p.id || p.name || idx} p={p} />
+                  (editingId === p.id && p.id)
+                    ? <EditableProjectCard key={p.id} p={p} isAdmin={isAdmin}
+                        onWrite={onWrite} reload={load} onDone={stopEdit} onDirty={setDirty} />
+                    : <ProjectCard key={p.id || p.name || idx} p={p}
+                        canEdit={canEdit && !!p.id} onEdit={() => requestEdit(p.id)} />
                 ))}
               </div>
             ))}
@@ -702,6 +795,7 @@ function App() {
   const [tab, setTab] = useState(0);
   const [query, setQuery] = useState('');
   const [favs, toggleFav] = useFavorites();
+  const [installPrompt, setInstallPrompt] = useState(null); // stashed beforeinstallprompt event
   const searchRef = useRef(null);
   const scrollPositions = useRef({});
 
@@ -719,9 +813,30 @@ function App() {
     return () => document.removeEventListener('keydown', handler);
   }, []);
 
+  // PWA install: stash the beforeinstallprompt event so we can show an "Install app"
+  // header button on browsers that support it; hide permanently once installed.
+  useEffect(() => {
+    const onBIP = e => { e.preventDefault(); setInstallPrompt(e); };
+    const onInstalled = () => setInstallPrompt(null);
+    window.addEventListener('beforeinstallprompt', onBIP);
+    window.addEventListener('appinstalled', onInstalled);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onBIP);
+      window.removeEventListener('appinstalled', onInstalled);
+    };
+  }, []);
+
+  const handleInstall = useCallback(async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    try { await installPrompt.userChoice; } catch (e) {}
+    setInstallPrompt(null); // the event is single-use - hide regardless of outcome
+  }, [installPrompt]);
+
   return (
     <div className="app">
-      <AppHeader query={query} onQuery={setQuery} searchRef={searchRef} active={tab} onSelect={handleSelect} />
+      <AppHeader query={query} onQuery={setQuery} searchRef={searchRef} active={tab} onSelect={handleSelect}
+        installAvailable={!!installPrompt} onInstall={handleInstall} />
       <TabBar active={tab} onSelect={handleSelect} favCount={favs.size} />
       {tab === PROJECTS_TAB
         ? <ProjectsView data={PROJECT_DATA} />
@@ -738,7 +853,7 @@ function App() {
   );
 }
 
-function AppHeader({ query, onQuery, searchRef, active, onSelect }) {
+function AppHeader({ query, onQuery, searchRef, active, onSelect, installAvailable, onInstall }) {
   // Improvement: Escape key clears search and blurs input
   const handleKeyDown = useCallback(e => {
     if (e.key === 'Escape') { onQuery(''); e.currentTarget.blur(); }
@@ -760,6 +875,12 @@ function AppHeader({ query, onQuery, searchRef, active, onSelect }) {
             {t.title}
           </button>
         ))}
+        {/* PWA install: renders ONLY when a beforeinstallprompt event is stashed
+            (self-hides when already installed or unsupported - no nagging banner). */}
+        {installAvailable && (
+          <button type="button" className="hdr-tool-btn" onClick={onInstall}
+            title="Install this app">&#11015; Install app</button>
+        )}
       </div>
       <div className="search-wrap">
         <input ref={searchRef} type="search" className="search-input"
