@@ -131,6 +131,44 @@ body{font-family:'Roboto',Arial,sans-serif;font-size:10pt;color:#222;background:
 .pd-item .who{color:#8a8d8e;font-size:8.5pt}
 .proj-edit-btn{margin-left:auto;background:#fff;border:1px solid #cdd6e3;border-radius:6px;color:#0a6aa6;cursor:pointer;font-family:'Roboto',Arial,sans-serif;font-size:8pt;font-weight:600;padding:3px 9px;line-height:1.3;flex-shrink:0;transition:background .12s,border-color .12s}
 .proj-edit-btn:hover{background:#eef4fb;border-color:#0a6aa6}
+/* -- Projects EDIT mode (form) -- */
+.ef{max-width:56rem;container-type:inline-size}
+.ef-sec{margin-top:30px}
+.ef-hdr{font-weight:700;color:#006098;font-size:9pt;text-transform:uppercase;letter-spacing:.5px;margin:0 0 8px}
+.ef-grid{display:grid;grid-template-columns:8rem 1fr;gap:8px 14px;align-items:center}
+.ef-lbl{font-weight:600;font-size:8.5pt;color:#445063;margin:0}
+.ef-lbl.top{align-self:start;padding-top:6px}
+.ef-ctl{font:inherit;font-size:9pt;padding:5px 8px;border:1px solid #c5c9cc;border-radius:6px;box-sizing:border-box;width:100%;background:#fff;color:#1A1A2E}
+.ef-ctl:focus-visible,.ef-pill-sel:focus-visible,.ef-x:focus-visible{outline:2px solid #006098;outline-offset:1px;border-color:#006098}
+textarea.ef-ctl{min-height:44px;resize:vertical;line-height:1.4}
+.ef-ctl[aria-invalid="true"]{border-color:#b3402f;background:#fdf6f5}
+.ef-derived{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ef-pill-sel{font:inherit;font-size:7.5pt;font-weight:700;padding:3px 22px 3px 9px;border-radius:999px;border:1px solid rgba(16,24,40,.12);cursor:pointer}
+.ef-hint{font-size:8pt;color:#6b7a90}
+.ef-items{display:grid;gap:6px}
+.ef-itemhead{display:grid;grid-template-columns:1fr 9rem 7.5rem 3rem 2rem;gap:8px;padding:0 8px;font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#6b7a90}
+.ef-itemhead.nostage{grid-template-columns:1fr 9rem 3rem 2rem}
+.ef-itemrow{display:grid;grid-template-columns:1fr 9rem 7.5rem 3rem 2rem;gap:8px;align-items:center;background:#f7f9fc;border:1px solid #e1e6ee;border-radius:8px;padding:8px}
+.ef-itemrow.nostage{grid-template-columns:1fr 9rem 3rem 2rem}
+.ef-itemrow.new{background:#eef6ff;border-color:#cfe0f5}
+.ef-itemrow.rm{display:flex;align-items:center;justify-content:space-between;background:#fdecea;border-color:#f0c4bf}
+.ef-rmmsg{text-decoration:line-through;color:#9a2727;font-size:9pt}
+.ef-done{display:flex;align-items:center;justify-content:center;margin:0}
+.ef-x{width:26px;height:26px;border-radius:6px;border:1px solid #cdd6e3;background:#fff;color:#9a2727;cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0}
+.ef-x:hover{background:#fbe4e4;border-color:#d99}
+.ef-noterow{display:grid;grid-template-columns:7rem 1fr 2rem;gap:8px;align-items:center;background:#f7f9fc;border:1px solid #e1e6ee;border-radius:8px;padding:8px}
+.ef-notehead{display:grid;grid-template-columns:7rem 1fr 2rem;gap:8px;padding:0 8px;font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#6b7a90}
+.ef-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ef-danger{margin-top:30px;border-top:1px solid #e1e6ee;padding-top:14px}
+.ef-danger .ef-hdr{color:#9a2727}
+.ef-danger-box{border:1px solid #e6b0a8;border-radius:8px;padding:12px;background:#fdfbfb}
+.ef-banner{border-radius:8px;padding:10px 12px;margin:10px 0;font-size:9pt}
+@container (max-width:34rem){
+  .ef-grid{grid-template-columns:1fr;gap:3px 0}
+  .ef-grid .ef-lbl{margin-top:8px}
+  .ef-itemhead,.ef-notehead{display:none}
+  .ef-itemrow:not(.rm),.ef-noterow{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -374,8 +412,32 @@ const EDIT_INPUT = { font: 'inherit', fontSize: '9pt', padding: '3px 6px', borde
 const EDIT_BTN = { font: 'inherit', fontSize: '8.5pt', fontWeight: 600, padding: '4px 10px', borderRadius: '14px', border: '1.5px solid #006098', background: '#006098', color: '#fff', cursor: 'pointer' };
 const EDIT_BTN_GHOST = { ...EDIT_BTN, background: '#fff', color: '#006098' };
 const EDIT_BTN_DANGER = { ...EDIT_BTN, border: '1.5px solid #b3402f', background: '#fff', color: '#b3402f' };
-const STATUS_CLASSES = ['info', 'warn', 'ok'];
-const STAGE_CLASSES = ['dev', 'post', 'none'];
+// One control per concern: Status style picks the pill color; Stage picks BOTH the
+// human label and the derived stage_class (see STAGE_TEXT). Pill tints mirror the
+// read-view .pill / .stg palette so edit-mode previews match exactly.
+const STATUS_OPTIONS = [
+  { value: 'info', label: 'Info' },
+  { value: 'warn', label: 'Warn' },
+  { value: 'ok', label: 'OK' },
+  { value: 'bad', label: 'Bad' },
+];
+const STAGE_OPTIONS = [
+  { cls: 'prelim', label: 'Prelim' },
+  { cls: 'dev', label: 'Dev' },
+  { cls: 'post', label: 'Post-Release' },
+  { cls: 'meet', label: 'Meetings' },
+  { cls: 'none', label: 'none' },
+];
+// Display label a Stage selection writes back to the `stage` text field (none clears it).
+const STAGE_TEXT = { prelim: 'Prelim', dev: 'Dev', post: 'Post-Release', meet: 'Meetings', none: '' };
+const PILL_TINT = {
+  ok: { bg: '#e3f3ea', fg: '#1f6b3b' }, info: { bg: '#e6eef6', fg: '#0a4f7a' },
+  warn: { bg: '#fcf3da', fg: '#8a6300' }, bad: { bg: '#fbe4e4', fg: '#9a2727' },
+  prelim: { bg: '#ede7f6', fg: '#4a2f8f' }, dev: { bg: '#e0edff', fg: '#0a4f7a' },
+  post: { bg: '#e3f3ea', fg: '#1f6b3b' }, meet: { bg: '#eceff3', fg: '#3f4a5a' },
+  none: { bg: '#f0f0f0', fg: '#6a6a6a' },
+};
+const pillSelStyle = (cls) => ({ background: (PILL_TINT[cls] || PILL_TINT.info).bg, color: (PILL_TINT[cls] || PILL_TINT.info).fg });
 
 // Single write helper. Returns { ok, status, data } and never throws, so callers
 // can branch on status (409 -> conflict, 4xx -> error message).
@@ -397,7 +459,7 @@ async function apiWrite(method, path, body) {
 function ConflictBanner({ conflict, onReload, onDismiss }) {
   if (!conflict) return null;
   return (
-    <div style={{ border: '1.5px solid #d99a00', background: '#fff8e6', borderRadius: '8px', padding: '10px 12px', margin: '10px 0', fontSize: '9pt' }}>
+    <div role="alert" className="ef-banner" style={{ border: '1.5px solid #d99a00', background: '#fff8e6' }}>
       <b>This changed since you loaded it.</b> Someone saved a newer version, so your edit was not applied. Reload the latest and re-apply your change.
       <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
         <button type="button" style={EDIT_BTN} onClick={onReload}>Reload latest</button>
@@ -407,59 +469,60 @@ function ConflictBanner({ conflict, onReload, onDismiss }) {
   );
 }
 
-// Presentational row for an existing open item. Fully controlled by the parent
-// card's draft state - every change is batched and committed by the card's Save.
-function EditableItemRow({ d, hasStage, disabled, onChange, onToggleRemove }) {
+// One bounded, tinted row per existing open item (common-region grouping), laid out
+// on the same grid as the column header: item text | who-when | stage | done | remove.
+// A single Stage <select> drives BOTH stage_class and the human stage label. Fully
+// controlled by the parent card's draft; batched and committed by the card's Save.
+function EditableItemRow({ d, idx, hasStage, disabled, onChange, onToggleRemove }) {
   if (d.removed) {
     return (
-      <div className="pd-item" style={{ borderTop: '1px dashed #e3e6e8', paddingTop: '6px', alignItems: 'center' }}>
-        <span style={{ textDecoration: 'line-through', color: '#9a2727', flex: 1 }}>{d.text || '(item)'} &mdash; will be removed on Save</span>
+      <div className={'ef-itemrow rm' + (hasStage ? '' : ' nostage')} role="group" aria-label={'Open item ' + (idx + 1) + ' (pending removal)'}>
+        <span className="ef-rmmsg">{d.text || '(item)'} &mdash; will be removed on Save</span>
         <button type="button" style={EDIT_BTN_GHOST} disabled={disabled} onClick={onToggleRemove}>Undo</button>
       </div>
     );
   }
   const ch = (k) => (e) => onChange(k, e.target.value);
+  const setStg = (e) => { const c = e.target.value; onChange('stage_class', c); onChange('stage', STAGE_TEXT[c]); };
   return (
-    <div className="pd-item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '4px', borderTop: '1px dashed #e3e6e8', paddingTop: '6px' }}>
-      <input style={EDIT_INPUT} value={d.text} onChange={ch('text')} placeholder="Item text" />
-      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-        <input style={{ ...EDIT_INPUT, flex: '2 1 130px', width: 'auto' }} value={d.meta} onChange={ch('meta')} placeholder="who / when" />
-        {hasStage && <>
-          <input style={{ ...EDIT_INPUT, flex: '1 1 80px', width: 'auto' }} value={d.stage} onChange={ch('stage')} placeholder="stage" />
-          <select style={{ ...EDIT_INPUT, flex: '0 1 84px', width: 'auto' }} value={d.stage_class} onChange={ch('stage_class')}>
-            {STAGE_CLASSES.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </>}
-        {/* Controlled done checkbox - reflects the draft; PATCHed (audited, with the
-            row version) when the card's Save runs. */}
-        <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '8.5pt', color: '#5a5d5e', whiteSpace: 'nowrap' }}>
-          <input type="checkbox" disabled={disabled} checked={!!d.done} onChange={e => onChange('done', e.target.checked)} />
-          done
-        </label>
-        <button type="button" style={EDIT_BTN_DANGER} disabled={disabled} onClick={onToggleRemove}>Remove</button>
-      </div>
+    <div className={'ef-itemrow' + (hasStage ? '' : ' nostage')} role="group" aria-label={'Open item ' + (idx + 1)}>
+      <input className="ef-ctl" value={d.text} onChange={ch('text')} aria-label="Item text" placeholder="Item text" />
+      <input className="ef-ctl" value={d.meta} onChange={ch('meta')} aria-label="Who / when" placeholder="who / when" />
+      {hasStage && (
+        <select className="ef-ctl" value={d.stage_class} onChange={setStg} aria-label="Stage">
+          {STAGE_OPTIONS.map(o => <option key={o.cls} value={o.cls}>{o.label}</option>)}
+        </select>
+      )}
+      {/* Controlled done checkbox - PATCHed (audited, with the row version) on Save. */}
+      <label className="ef-done"><input type="checkbox" disabled={disabled} checked={!!d.done} onChange={e => onChange('done', e.target.checked)} aria-label={'Mark item ' + (idx + 1) + ' done'} /></label>
+      <button type="button" className="ef-x" title="Remove item" aria-label={'Remove item ' + (idx + 1)} disabled={disabled} onClick={onToggleRemove}>&times;</button>
     </div>
   );
 }
 
-// Presentational row for a queued NEW open item (POSTed by the card's Save).
-function NewItemRow({ n, disabled, onChange, onRemove }) {
+// One queued NEW open item (POSTed by the card's Save). Text + who/when only; empty
+// stage/done cells keep it aligned to the same grid as existing items.
+function NewItemRow({ n, hasStage, disabled, onChange, onRemove }) {
   return (
-    <div className="pd-item" style={{ borderTop: '1px dashed #e3e6e8', paddingTop: '6px', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-      <input style={{ ...EDIT_INPUT, flex: '2 1 150px', width: 'auto' }} value={n.text} onChange={e => onChange('text', e.target.value)} placeholder="New open item" />
-      <input style={{ ...EDIT_INPUT, flex: '1 1 100px', width: 'auto' }} value={n.meta} onChange={e => onChange('meta', e.target.value)} placeholder="who / when" />
-      <button type="button" style={EDIT_BTN_GHOST} disabled={disabled} onClick={onRemove}>Remove</button>
+    <div className={'ef-itemrow new' + (hasStage ? '' : ' nostage')} role="group" aria-label="New open item">
+      <input className="ef-ctl" value={n.text} onChange={e => onChange('text', e.target.value)} aria-label="New item text" placeholder="New open item" />
+      <input className="ef-ctl" value={n.meta} onChange={e => onChange('meta', e.target.value)} aria-label="Who / when" placeholder="who / when" />
+      {hasStage && <span aria-hidden="true"></span>}
+      <span aria-hidden="true"></span>
+      <button type="button" className="ef-x" title="Discard new item" aria-label="Discard new item" disabled={disabled} onClick={onRemove}>&times;</button>
     </div>
   );
 }
 
-// Presentational row for a queued NEW timeline note (POSTed by the card's Save).
+// One queued NEW timeline note (POSTed by the card's Save). Both fields are required
+// to save the note; a half-filled row flags aria-invalid and is skipped on Save.
 function NewNoteRow({ n, disabled, onChange, onRemove }) {
+  const partial = (!!n.when.trim()) !== (!!n.note.trim());
   return (
-    <div className="pd-item" style={{ borderTop: '1px dashed #e3e6e8', paddingTop: '6px', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-      <input style={{ ...EDIT_INPUT, flex: '0 1 80px', width: 'auto' }} value={n.when} onChange={e => onChange('when', e.target.value)} placeholder="when (6/6)" />
-      <input style={{ ...EDIT_INPUT, flex: '2 1 150px', width: 'auto' }} value={n.note} onChange={e => onChange('note', e.target.value)} placeholder="note" />
-      <button type="button" style={EDIT_BTN_GHOST} disabled={disabled} onClick={onRemove}>Remove</button>
+    <div className="ef-noterow" role="group" aria-label="New timeline note">
+      <input className="ef-ctl" value={n.when} onChange={e => onChange('when', e.target.value)} aria-label="Note date" aria-invalid={partial} placeholder="when (6/6)" />
+      <input className="ef-ctl" value={n.note} onChange={e => onChange('note', e.target.value)} aria-label="Note text" aria-invalid={partial} placeholder="note" />
+      <button type="button" className="ef-x" title="Discard note" aria-label="Discard note" disabled={disabled} onClick={onRemove}>&times;</button>
     </div>
   );
 }
@@ -501,6 +564,13 @@ function EditableProjectCard({ p, isAdmin, onWrite, reload, onDone, onDirty }) {
   const addNewNote = () => setNewNotes(a => [...a, { key: keyRef.current++, when: '', note: '' }]);
   const chNewNote = (i, k, v) => setNewNotes(a => a.map((n, idx) => idx === i ? { ...n, [k]: v } : n));
   const rmNewNote = (i) => setNewNotes(a => a.filter((_, idx) => idx !== i));
+  // One Stage <select> writes both the derived class and the human label (a11y: stable ids).
+  const setProjStage = (cls) => setProj(s => ({ ...s, stage_class: cls, stage: STAGE_TEXT[cls] }));
+  const fid = (s) => 'ef-' + p.id + '-' + s;
+
+  // A11y: move focus into the first field when this card enters edit mode.
+  const firstFieldRef = useRef(null);
+  useEffect(() => { if (firstFieldRef.current) firstFieldRef.current.focus(); }, []);
 
   const projDirty =
     proj.status !== (p.status || '') || proj.status_class !== (p.statusClass || 'info') ||
@@ -578,54 +648,105 @@ function EditableProjectCard({ p, isAdmin, onWrite, reload, onDone, onDirty }) {
     onDirty(false); await reload(); onDone();
   };
 
+  const hasItems = items.length > 0 || newItems.length > 0;
+  const actions = (
+    <div className="ef-actions">
+      <button type="button" style={EDIT_BTN} disabled={saving} onClick={save}>{saving ? 'Saving…' : 'Save'}</button>
+      <button type="button" style={EDIT_BTN_GHOST} disabled={saving} onClick={cancel}>Cancel</button>
+    </div>
+  );
+
   return (
-    <div className="proj-card"><div className="proj-card-body">
+    <div className="proj-card"><div className="proj-card-body"><div className="ef">
       <div className="proj-top">
         <span className="proj-name">{p.name}</span>
         <span className="who" style={{ fontSize: '8pt', color: '#9aa3a8' }}>v{p.version}</span>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px' }}>
-          <button type="button" style={EDIT_BTN} disabled={saving} onClick={save}>{saving ? 'Saving…' : 'Save'}</button>
-          <button type="button" style={EDIT_BTN_GHOST} disabled={saving} onClick={cancel}>Cancel</button>
-        </div>
+        <div style={{ marginLeft: 'auto' }}>{actions}</div>
       </div>
 
       <ConflictBanner conflict={conflict} onReload={() => { setConflict(null); reload(); }} onDismiss={() => setConflict(null)} />
-      {err && <div style={{ border: '1.5px solid #b3402f', background: '#fdecea', borderRadius: '8px', padding: '8px 12px', margin: '10px 0', fontSize: '9pt', color: '#8a2c20' }}>{err}</div>}
+      {err && <div role="alert" id={fid('err')} className="ef-banner" style={{ border: '1.5px solid #b3402f', background: '#fdecea', color: '#8a2c20' }}>{err}</div>}
 
-      <div style={{ display: 'grid', gap: '6px', marginTop: '6px' }}>
-        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-          <input style={{ ...EDIT_INPUT, flex: '2 1 150px', width: 'auto' }} value={proj.status} onChange={chProj('status')} placeholder="status" />
-          <select style={{ ...EDIT_INPUT, flex: '0 1 84px', width: 'auto' }} value={proj.status_class} onChange={chProj('status_class')}>
-            {STATUS_CLASSES.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </div>
-        {hasStage && (
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-            <input style={{ ...EDIT_INPUT, flex: '2 1 150px', width: 'auto' }} value={proj.stage} onChange={chProj('stage')} placeholder="stage" />
-            <select style={{ ...EDIT_INPUT, flex: '0 1 84px', width: 'auto' }} value={proj.stage_class} onChange={chProj('stage_class')}>
-              {STAGE_CLASSES.map(s => <option key={s} value={s}>{s}</option>)}
+      {/* -- Project -- */}
+      <div className="ef-sec" style={{ marginTop: '14px' }}>
+        <div className="ef-hdr">Project</div>
+        <div className="ef-grid">
+          <label className="ef-lbl" htmlFor={fid('status')}>Status</label>
+          <input id={fid('status')} ref={firstFieldRef} className="ef-ctl" value={proj.status} onChange={chProj('status')} placeholder="e.g. On track" aria-invalid={!!err} aria-describedby={err ? fid('err') : undefined} />
+
+          <label className="ef-lbl" htmlFor={fid('statusstyle')}>Status style</label>
+          <div className="ef-derived">
+            <select id={fid('statusstyle')} className="ef-pill-sel" style={pillSelStyle(proj.status_class)} value={proj.status_class} onChange={chProj('status_class')}>
+              {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
+            <span className="ef-hint">colored pill shown on the card</span>
           </div>
-        )}
-        <textarea style={{ ...EDIT_INPUT, minHeight: '38px', resize: 'vertical' }} value={proj.statusline} onChange={chProj('statusline')} placeholder="status line" />
-        <input style={EDIT_INPUT} value={proj.next_step} onChange={chProj('next_step')} placeholder="next step (optional)" />
+
+          {hasStage && <>
+            <label className="ef-lbl" htmlFor={fid('stage')}>Stage</label>
+            <select id={fid('stage')} className="ef-ctl" style={{ maxWidth: '14rem' }} value={proj.stage_class} onChange={e => setProjStage(e.target.value)}>
+              {STAGE_OPTIONS.map(o => <option key={o.cls} value={o.cls}>{o.label}</option>)}
+            </select>
+
+            <span className="ef-lbl">Stage style</span>
+            <div className="ef-derived">
+              <span className={'stg ' + proj.stage_class}>{proj.stage_class === 'none' ? 'none' : STAGE_TEXT[proj.stage_class]}</span>
+              <span className="ef-hint">derived from Stage</span>
+            </div>
+          </>}
+
+          <label className="ef-lbl top" htmlFor={fid('statusline')}>Status line</label>
+          <textarea id={fid('statusline')} className="ef-ctl" value={proj.statusline} onChange={chProj('statusline')} placeholder="One-line summary shown under the title" />
+
+          <label className="ef-lbl" htmlFor={fid('next')}>Next step</label>
+          <input id={fid('next')} className="ef-ctl" value={proj.next_step} onChange={chProj('next_step')} placeholder="Optional" />
+        </div>
       </div>
 
-      <span className="pd-lbl" style={{ marginTop: '10px' }}>Open items</span>
-      {items.map((it, i) => <EditableItemRow key={it.id || i} d={it} hasStage={hasStage} disabled={saving} onChange={(k, v) => updItem(i, k, v)} onToggleRemove={() => updItem(i, 'removed', !it.removed)} />)}
-      {newItems.map((n, i) => <NewItemRow key={n.key} n={n} disabled={saving} onChange={(k, v) => chNewItem(i, k, v)} onRemove={() => rmNewItem(i)} />)}
-      <div style={{ marginTop: '6px' }}><button type="button" style={EDIT_BTN_GHOST} disabled={saving} onClick={addNewItem}>+ Add open item</button></div>
+      {/* -- Open items -- */}
+      <div className="ef-sec">
+        <div className="ef-hdr">Open items</div>
+        <div className="ef-items">
+          {hasItems && (
+            <div className={'ef-itemhead' + (hasStage ? '' : ' nostage')}>
+              <span>Item</span><span>Who / when</span>{hasStage && <span>Stage</span>}<span>Done</span><span aria-hidden="true"></span>
+            </div>
+          )}
+          {items.map((it, i) => <EditableItemRow key={it.id || i} d={it} idx={i} hasStage={hasStage} disabled={saving} onChange={(k, v) => updItem(i, k, v)} onToggleRemove={() => updItem(i, 'removed', !it.removed)} />)}
+          {newItems.map((n, i) => <NewItemRow key={n.key} n={n} hasStage={hasStage} disabled={saving} onChange={(k, v) => chNewItem(i, k, v)} onRemove={() => rmNewItem(i)} />)}
+        </div>
+        <div style={{ marginTop: '8px' }}><button type="button" style={EDIT_BTN_GHOST} disabled={saving} onClick={addNewItem}>+ Add open item</button></div>
+      </div>
 
-      <span className="pd-lbl" style={{ marginTop: '10px' }}>Timeline notes to add</span>
-      {newNotes.map((n, i) => <NewNoteRow key={n.key} n={n} disabled={saving} onChange={(k, v) => chNewNote(i, k, v)} onRemove={() => rmNewNote(i)} />)}
-      <div style={{ marginTop: '6px' }}><button type="button" style={EDIT_BTN_GHOST} disabled={saving} onClick={addNewNote}>+ Add timeline note</button></div>
+      {/* -- Add timeline note -- */}
+      <div className="ef-sec">
+        <div className="ef-hdr">Add timeline note</div>
+        {newNotes.length > 0 && (
+          <div className="ef-items">
+            <div className="ef-notehead"><span>When</span><span>Note</span><span aria-hidden="true"></span></div>
+            {newNotes.map((n, i) => <NewNoteRow key={n.key} n={n} disabled={saving} onChange={(k, v) => chNewNote(i, k, v)} onRemove={() => rmNewNote(i)} />)}
+          </div>
+        )}
+        <div style={{ marginTop: '8px' }}><button type="button" style={EDIT_BTN_GHOST} disabled={saving} onClick={addNewNote}>+ Add timeline note</button></div>
+      </div>
 
+      {/* -- Repeated Save/Cancel for long cards -- */}
+      <div className="ef-sec" style={{ marginTop: '24px' }}>
+        {actions}
+        {dirty && <span className="ef-hint" style={{ marginTop: '6px', display: 'inline-block' }}>Unsaved changes</span>}
+      </div>
+
+      {/* -- Danger zone (separated; never near Save) -- */}
       {isAdmin && (
-        <div style={{ marginTop: '10px', borderTop: '1px solid #eee', paddingTop: '8px' }}>
-          <button type="button" style={EDIT_BTN_DANGER} disabled={saving} onClick={delProject}>Delete project (admin)</button>
+        <div className="ef-danger">
+          <div className="ef-hdr">Danger zone</div>
+          <div className="ef-danger-box">
+            <div style={{ fontSize: '8.5pt', color: '#6b7a90', marginBottom: '8px' }}>Soft-deletes this project. It can be restored from the audit trail.</div>
+            <button type="button" style={EDIT_BTN_DANGER} disabled={saving} onClick={delProject}>Delete project</button>
+          </div>
         </div>
       )}
-    </div></div>
+    </div></div></div>
   );
 }
 
