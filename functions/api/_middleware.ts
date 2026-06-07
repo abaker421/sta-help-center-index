@@ -1,16 +1,19 @@
 // functions/api/_middleware.ts
 // Runs before every /api/* handler. Validates the Cloudflare Access JWT and sets
-// context.data.user (email / kind / role) from the validated claims via a
-// server-side allowlist. NEVER trust a client-supplied identity - only the
-// cryptographically validated Access JWT.
+// context.data.user (email / kind / role / agent_name) from the validated claims.
+// NEVER trust a client-supplied identity - only the cryptographically validated
+// Access JWT (and, for agents, a header that is BACKED by a valid service token).
 //
 // Verification is dependency-free (functions/_lib/access.js, Web Crypto), so the
 // Functions bundle resolves with no npm install and the hub stays a no-build
-// static + Functions deploy. This gates ALL /api/* routes, reads included, so
-// only @k12sta.com sees data. Phase B1 is read-only; role is computed now and
-// enforced by write handlers in B2.
+// static + Functions deploy. This gates ALL /api/* routes, reads included.
+//
+// B3a: the human path is unchanged; service-token requests can now carry an
+// X-Operator-Email (bounded delegation) - the mapping logic lives in the PURE,
+// unit-tested functions/_lib/identity.js (resolveIdentity).
 
 import { verifyAccessJwt } from "../_lib/access.js";
+import { resolveIdentity, ADMINS } from "../_lib/identity.js";
 
 // ---- Fill from the Cloudflare Zero Trust dashboard --------------------------
 // Team domain (Zero Trust > Settings > team domain).
@@ -20,30 +23,12 @@ const ACCESS_TEAM_DOMAIN = "https://school-tech.cloudflareaccess.com";
 const ACCESS_APP_AUD = "3b211e7c1ccc6e71090cd412e1934a2141b5b02545a215119b6b68162d05d3f0";
 // -----------------------------------------------------------------------------
 
-// Server-side role allowlist. Adam is the only admin; every other @k12sta.com
-// user is a member. Keep authorization in code, never in a client claim.
-const ADMINS = new Set<string>(["adamb@k12sta.com"]);
-
 type AppUser = {
   email: string;
   kind: "human" | "agent";
   role: "admin" | "member";
   agent_name?: string | null;
 };
-
-// Maps a validated Access JWT payload to the app's identity + role. Handles both
-// the identity shape (has `email`) and the service-token shape (no email; carries
-// `common_name` = the token's Client ID).
-function toAppUser(payload: any): AppUser {
-  const email = (payload?.email ?? "").toLowerCase();
-  const isService = !email && !!payload?.common_name;
-  return {
-    email: email || `service:${payload?.common_name}`,
-    kind: isService ? "agent" : "human",
-    role: ADMINS.has(email) ? "admin" : "member",
-    agent_name: null, // attached by the MCP/service layer in B2/B3
-  };
-}
 
 // Single gate middleware. In production it requires a valid Access JWT (403
 // otherwise). The LOCAL_DEV branch is impossible in production because LOCAL_DEV
@@ -82,6 +67,18 @@ export const onRequest: PagesFunction = async (context) => {
     });
   }
 
-  context.data.user = toAppUser(payload);
+  // Map the validated claims (+ delegation headers, for service tokens) to identity.
+  // resolveIdentity is pure + unit-tested; it returns a 403 result for a service
+  // token claiming an operator it is not permitted to act for.
+  const getHeader = (name: string) => context.request.headers.get(name);
+  const resolved = resolveIdentity(payload, getHeader);
+  if (!resolved.ok) {
+    return new Response(JSON.stringify({ error: resolved.error }), {
+      status: resolved.status,
+      headers: { "content-type": "application/json" },
+    });
+  }
+
+  context.data.user = resolved.user satisfies AppUser;
   return context.next();
 };

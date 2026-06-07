@@ -36,6 +36,53 @@ function bucketBy(rows, key) {
 }
 
 /**
+ * Assemble ONE project row + its children into the exact per-project shape the
+ * collection emits (the object that lives inside groups[].projects[]). Includes
+ * `id` + `version` on the project and each open_item, and `done` per open_item.
+ * Used by the single-project GET (B3a) and by assembleProjects (the collection).
+ * The key ORDER here defines the serialized shape - keep it stable.
+ *
+ * @param {{project:any, items?:any[], history?:any[], timeline?:any[]}} rows
+ * @returns the per-project object
+ */
+export function assembleProject({ project, items = [], history = [], timeline = [] }) {
+  const row = project;
+  // Build only the keys the live payload carries for this project kind (dev vs ops
+  // differ). id + version: addressing + compare-and-set (B2). They are additive -
+  // every other field stays byte-identical to B1 (harnesses strip id/version/done).
+  const p = { id: row.id, version: row.version, name: row.name, status: row.status, statusClass: row.status_class };
+  if (row.stage != null) {
+    p.stage = row.stage;
+    p.stageClass = row.stage_class;
+  }
+  if (row.statusline != null) p.statusline = row.statusline;
+  if (row.what_it_is != null) p.whatItIs = row.what_it_is;
+
+  if (history.length) {
+    p.stageHistory = history.map((h) => ({ when: h.when_label, note: h.note }));
+  }
+
+  p.openItems = items.map((it) => {
+    // id + version (compare-and-set + addressing) and done (so the edit UI's done
+    // checkbox reflects persisted state). done emitted as a boolean; stored 0/1.
+    const o = { id: it.id, version: it.version, text: it.text, meta: it.meta ?? "", done: !!it.done };
+    if (it.stage != null) {
+      o.stage = it.stage;
+      o.stageClass = it.stage_class;
+    }
+    return o;
+  });
+
+  if (timeline.length) {
+    p.timeline = timeline.map((t) => ({ when: t.when_label, note: t.note }));
+  }
+
+  if (row.next_step != null) p.next = row.next_step;
+
+  return p;
+}
+
+/**
  * @param {{projects:any[], items:any[], history:any[], timeline:any[]}} rows
  * @returns the wrapped tab payload
  */
@@ -52,42 +99,12 @@ export function assembleProjects({ projects = [], items = [], history = [], time
       generated = row.updated_at;
     }
 
-    // Build only the keys the live payload carries for this project kind, so the
-    // shape matches the static project-data.json exactly (dev vs ops differ).
-    // B2: `id` + `version` are carried so the edit UI can address the row and send
-    // expected_version. They are additive - every other field stays byte-identical
-    // to B1 (the read harness strips id/version before its deep-equal).
-    const p = { id: row.id, version: row.version, name: row.name, status: row.status, statusClass: row.status_class };
-    if (row.stage != null) {
-      p.stage = row.stage;
-      p.stageClass = row.stage_class;
-    }
-    if (row.statusline != null) p.statusline = row.statusline;
-    if (row.what_it_is != null) p.whatItIs = row.what_it_is;
-
-    const hist = historyByProject.get(row.id) || [];
-    if (hist.length) {
-      p.stageHistory = hist.map((h) => ({ when: h.when_label, note: h.note }));
-    }
-
-    p.openItems = (itemsByProject.get(row.id) || []).map((it) => {
-      // B2: id + version (compare-and-set + addressing) and done (so the edit UI's
-      // done checkbox reflects persisted state) carried per open_item. done is
-      // emitted as a boolean for the UI; stored 0/1 in D1.
-      const o = { id: it.id, version: it.version, text: it.text, meta: it.meta ?? "", done: !!it.done };
-      if (it.stage != null) {
-        o.stage = it.stage;
-        o.stageClass = it.stage_class;
-      }
-      return o;
+    const p = assembleProject({
+      project: row,
+      items: itemsByProject.get(row.id) || [],
+      history: historyByProject.get(row.id) || [],
+      timeline: tlByProject.get(row.id) || [],
     });
-
-    const tl = tlByProject.get(row.id) || [];
-    if (tl.length) {
-      p.timeline = tl.map((t) => ({ when: t.when_label, note: t.note }));
-    }
-
-    if (row.next_step != null) p.next = row.next_step;
 
     const bucket = byGroup.get(row.group);
     if (bucket) bucket.push(p);

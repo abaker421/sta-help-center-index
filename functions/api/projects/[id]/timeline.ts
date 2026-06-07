@@ -3,13 +3,15 @@
 // Append-only insert: no version, no conflict (KB module-04). Host-gated + audited.
 
 import { json, error } from "../../../_lib/http.js";
-import { requireWriteHost, writeAudit } from "../../../_lib/writes.js";
+import { requireWriteHost, requireDelegatedOperator, writeAudit } from "../../../_lib/writes.js";
 
 export const onRequestPost: PagesFunction = async ({ request, env, params, data }) => {
   const user = (data as any).user;
 
   const hostGate = requireWriteHost(request, env);
   if (hostGate) return hostGate;
+  const opGate = requireDelegatedOperator(user);
+  if (opGate) return opGate;
 
   const projectId = Number(params.id);
   if (!Number.isInteger(projectId)) return error("invalid id", 400);
