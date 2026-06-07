@@ -12,7 +12,7 @@
 
 import { json, error } from "../_lib/http.js";
 import { assembleProjects } from "../_lib/assemble.js";
-import { requireWriteHost, requireRole, writeAudit } from "../_lib/writes.js";
+import { requireWriteHost, requireRole, requireDelegatedOperator, writeAudit } from "../_lib/writes.js";
 
 export const onRequestGet: PagesFunction = async ({ env }) => {
   try {
@@ -72,6 +72,8 @@ export const onRequestPost: PagesFunction = async ({ request, env, data }) => {
   if (hostGate) return hostGate;
   const roleGate = requireRole(user, "admin");
   if (roleGate) return roleGate;
+  const opGate = requireDelegatedOperator(user);
+  if (opGate) return opGate;
 
   let body: any;
   try {

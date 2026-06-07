@@ -10,6 +10,7 @@
 import { json, error } from "../../_lib/http.js";
 import {
   requireWriteHost,
+  requireDelegatedOperator,
   compareAndSet,
   writeAudit,
   pickFields,
@@ -28,6 +29,8 @@ export const onRequestPatch: PagesFunction = async ({ request, env, params, data
 
   const hostGate = requireWriteHost(request, env);
   if (hostGate) return hostGate;
+  const opGate = requireDelegatedOperator(user);
+  if (opGate) return opGate;
 
   const id = Number(params.id);
   if (!Number.isInteger(id)) return error("invalid id", 400);
@@ -92,6 +95,8 @@ export const onRequestDelete: PagesFunction = async ({ request, env, params, dat
 
   const hostGate = requireWriteHost(request, env);
   if (hostGate) return hostGate;
+  const opGate = requireDelegatedOperator(user);
+  if (opGate) return opGate;
 
   const id = Number(params.id);
   if (!Number.isInteger(id)) return error("invalid id", 400);

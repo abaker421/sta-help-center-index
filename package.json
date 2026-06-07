@@ -8,6 +8,7 @@
     "seed": "node scripts/json-to-seed.js",
     "verify:local": "node scripts/verify-local.mjs",
     "verify:writes": "node scripts/verify-writes.mjs",
+    "verify:identity": "node scripts/verify-identity.mjs",
     "migrate:local": "wrangler d1 migrations apply sta-tracker --local",
     "migrate:remote": "wrangler d1 migrations apply sta-tracker --remote",
     "dev": "wrangler pages dev --binding LOCAL_DEV=1"

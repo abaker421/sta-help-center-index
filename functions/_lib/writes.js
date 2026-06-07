@@ -52,6 +52,22 @@ export function requireRole(user, need) {
 }
 
 // ---------------------------------------------------------------------------
+// 2b. Delegated-operator gate (B3a; KB module-05 bounded delegation)
+// ---------------------------------------------------------------------------
+// Every write must be attributable to a real person (module-04 audit contract).
+// A service-token request with no delegated operator resolves to an operator-less
+// agent (email still 'service:<common_name>'); such an agent may READ but must not
+// WRITE. Humans and properly-delegated agents (real operator email) pass. Call this
+// in every write handler after the host-gate and role-gate.
+/** @returns {Response|null} 403 if an operator-less agent, else null. */
+export function requireDelegatedOperator(user) {
+  if (user.kind === "agent" && typeof user.email === "string" && user.email.startsWith("service:")) {
+    return error("agent write requires a delegated operator", 403);
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 // Mutable-field whitelists (Decision 2). Anything not listed is rejected so a
 // client (or a member) cannot smuggle a structural or unknown column into an UPDATE.
 // ---------------------------------------------------------------------------
