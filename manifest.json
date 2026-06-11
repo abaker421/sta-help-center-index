@@ -1,7 +1,7 @@
 {
-  "name": "STA Project Hub",
+  "name": "STA Support Hub",
   "short_name": "STA Hub",
-  "description": "School Technology Associates Project Hub - help center article index, project tracker, dev time",
+  "description": "School Technology Associates Support Hub - help center article index, project tracker, dev time",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#1A1A2E",
