@@ -64,80 +64,7 @@
       }
     ]
   },
-  "needs_attention": [
-    {
-      "text": "Email Pat re: West Orange Cove TT7 humidity solution; loop in Ken/CMI",
-      "project": null,
-      "age": "9d",
-      "statusClass": "watch",
-      "context": "Pending - 9d open (since 2026-06-03)",
-      "meta": "Pending - 9d open (since 2026-06-03)"
-    },
-    {
-      "text": "Update the PA situation report with accurate data",
-      "project": null,
-      "age": "8d",
-      "statusClass": "watch",
-      "context": "Pending - 8d open (since 2026-06-04)",
-      "meta": "Pending - 8d open (since 2026-06-04)"
-    },
-    {
-      "text": "Gain access to Skyward training portal to self-educate on Skyward's positive-attendance handling",
-      "project": null,
-      "age": "8d",
-      "statusClass": "watch",
-      "context": "Pending - 8d open (since 2026-06-04)",
-      "meta": "Pending - 8d open (since 2026-06-04)"
-    },
-    {
-      "text": "Coordinate TimeClock release date with Cody before rollout",
-      "project": null,
-      "age": "8d",
-      "statusClass": "watch",
-      "context": "Pending - 8d open (since 2026-06-04)",
-      "meta": "Pending - 8d open (since 2026-06-04)"
-    },
-    {
-      "text": "Send Andrew the spec sheet on Grasshopper's new AI feature",
-      "project": null,
-      "age": "8d",
-      "statusClass": "watch",
-      "context": "Pending - 8d open (since 2026-06-04)",
-      "meta": "Pending - 8d open (since 2026-06-04)"
-    },
-    {
-      "text": "TimeClock RC testing + feedback",
-      "project": "TimeClock",
-      "age": "8d",
-      "statusClass": "watch",
-      "context": "Waiting on - 8d open (since 2026-06-04)",
-      "meta": "Waiting on - 8d open (since 2026-06-04)"
-    },
-    {
-      "text": "ID product demo",
-      "project": "ID",
-      "age": "8d",
-      "statusClass": "watch",
-      "context": "Waiting on - 8d open (since 2026-06-04)",
-      "meta": "Waiting on - 8d open (since 2026-06-04)"
-    },
-    {
-      "text": "SchoolTRAK: create dedicated subdomain (Adam)",
-      "project": "SchoolTRAK",
-      "age": "7d",
-      "statusClass": "watch",
-      "context": "Carryover - 7d open (since 2026-06-05)",
-      "meta": "Carryover - 7d open (since 2026-06-05)"
-    },
-    {
-      "text": "Support calibration aging",
-      "project": "Support Calibration",
-      "age": null,
-      "statusClass": "risk",
-      "context": "18 cases 30d+, 12 cases 90d+; oldest 478 (STA superuser-pw, 00015828)",
-      "meta": "18 cases 30d+, 12 cases 90d+; oldest 478 (STA superuser-pw, 00015828)"
-    }
-  ],
+  "needs_attention": [],
   "todays_meetings": [],
   "items": [
     {
@@ -149,7 +76,7 @@
       "owner": null,
       "status_label": null,
       "status_class": null,
-      "context": "Cruxlab action due 6/5 (Fri); gates SOW testing - still not confirmed done as of 6/11 (6 days)",
+      "context": "Needs attention - 7d open. Cruxlab action due 6/5 (Fri); gates SOW testing - still not confirmed done as of 6/11 (6 days)",
       "done": 0,
       "done_at": null,
       "source": "Carryover Log",
@@ -336,7 +263,7 @@
       "sort": 11
     },
     {
-      "section": "pending",
+      "section": "carryover",
       "text": "Update the PA situation report with accurate data",
       "meta": "Requested by Support Daily Connect - 2026-06-04 - SchoolTRAK PA turnaround - replace assumptions with real figures on why PA is underperforming",
       "item_date": "2026-06-04",
@@ -344,14 +271,14 @@
       "owner": "Support Daily Connect",
       "status_label": null,
       "status_class": null,
-      "context": "SchoolTRAK PA turnaround - replace assumptions with real figures on why PA is underperforming",
+      "context": "Needs attention - 8d open. SchoolTRAK PA turnaround - replace assumptions with real figures on why PA is underperforming",
       "done": 0,
       "done_at": null,
       "source": "Pending Adam's Action",
-      "sort": 12
+      "sort": 1
     },
     {
-      "section": "pending",
+      "section": "carryover",
       "text": "Gain access to Skyward training portal to self-educate on Skyward's positive-attendance handling",
       "meta": "Requested by Support Daily Connect - 2026-06-04 - NOTE: the 6/4 \"training block today\" framing is stale - today's 10-11 AM block is ADA/WCAG training with Kelsey, not Skyward PA",
       "item_date": "2026-06-04",
@@ -359,14 +286,14 @@
       "owner": "Support Daily Connect",
       "status_label": null,
       "status_class": null,
-      "context": "NOTE: the 6/4 \"training block today\" framing is stale - today's 10-11 AM block is ADA/WCAG training with Kelsey, not Skyward PA",
+      "context": "Needs attention - 8d open. NOTE: the 6/4 \"training block today\" framing is stale - today's 10-11 AM block is ADA/WCAG training with Kelsey, not Skyward PA",
       "done": 0,
       "done_at": null,
       "source": "Pending Adam's Action",
-      "sort": 13
+      "sort": 2
     },
     {
-      "section": "pending",
+      "section": "carryover",
       "text": "Coordinate TimeClock release date with Cody before rollout",
       "meta": "Requested by TimeClock dev call - 2026-06-04 - Hold rollout until coordinated, even if Skyward QA approves",
       "item_date": "2026-06-04",
@@ -374,14 +301,14 @@
       "owner": "TimeClock dev call",
       "status_label": null,
       "status_class": null,
-      "context": "Hold rollout until coordinated, even if Skyward QA approves",
+      "context": "Needs attention - 8d open. Hold rollout until coordinated, even if Skyward QA approves",
       "done": 0,
       "done_at": null,
       "source": "Pending Adam's Action",
-      "sort": 14
+      "sort": 3
     },
     {
-      "section": "pending",
+      "section": "carryover",
       "text": "Send Andrew the spec sheet on Grasshopper's new AI feature",
       "meta": "Requested by Andrew (Product Dev call) - 2026-06-04 - Action item assigned to Adam. LIKELY OBE: on 6/8 Daily Connect, Tyler decided not to move forward with the Grasshopper AI integration - confirm before closing",
       "item_date": "2026-06-04",
@@ -389,11 +316,11 @@
       "owner": "Andrew (Product Dev call)",
       "status_label": null,
       "status_class": null,
-      "context": "Action item assigned to Adam. LIKELY OBE: on 6/8 Daily Connect, Tyler decided not to move forward with the Grasshopper AI integration - confirm before closing",
+      "context": "Needs attention - 8d open. Action item assigned to Adam. LIKELY OBE: on 6/8 Daily Connect, Tyler decided not to move forward with the Grasshopper AI integration - confirm before closing",
       "done": 0,
       "done_at": null,
       "source": "Pending Adam's Action",
-      "sort": 15
+      "sort": 4
     },
     {
       "section": "pending",
@@ -408,7 +335,7 @@
       "done": 0,
       "done_at": null,
       "source": "Pending Adam's Action",
-      "sort": 16
+      "sort": 12
     },
     {
       "section": "pending",
@@ -423,10 +350,10 @@
       "done": 0,
       "done_at": null,
       "source": "Pending Adam's Action",
-      "sort": 17
+      "sort": 13
     },
     {
-      "section": "pending",
+      "section": "carryover",
       "text": "Email Pat re: West Orange Cove TT7 humidity solution; loop in Ken/CMI",
       "meta": "Requested by Weekly Huddle - 2026-06-03 - NEMA enclosure recommended, 2-3 wk; Adam committed to follow up with Pat",
       "item_date": "2026-06-03",
@@ -434,14 +361,14 @@
       "owner": "Weekly Huddle",
       "status_label": null,
       "status_class": null,
-      "context": "NEMA enclosure recommended, 2-3 wk; Adam committed to follow up with Pat",
+      "context": "Needs attention - 9d open. NEMA enclosure recommended, 2-3 wk; Adam committed to follow up with Pat",
       "done": 0,
       "done_at": null,
       "source": "Pending Adam's Action",
-      "sort": 18
+      "sort": 5
     },
     {
-      "section": "waiting_on",
+      "section": "carryover",
       "text": "TimeClock RC testing + feedback",
       "meta": "Sent to Skyward QA team - 2026-06-04 - RC shared; QA testing in progress",
       "item_date": "2026-06-04",
@@ -449,14 +376,14 @@
       "owner": "Skyward QA team",
       "status_label": null,
       "status_class": null,
-      "context": "RC shared; QA testing in progress",
+      "context": "Needs attention - 8d open. RC shared; QA testing in progress",
       "done": 0,
       "done_at": null,
       "source": "Waiting On Others",
-      "sort": 0
+      "sort": 6
     },
     {
-      "section": "waiting_on",
+      "section": "carryover",
       "text": "ID product demo",
       "meta": "Sent to Brian (via Andrew) - 2026-06-04 - Andrew to text Brian to arrange",
       "item_date": "2026-06-04",
@@ -464,11 +391,11 @@
       "owner": "Brian (via Andrew)",
       "status_label": null,
       "status_class": null,
-      "context": "Andrew to text Brian to arrange",
+      "context": "Needs attention - 8d open. Andrew to text Brian to arrange",
       "done": 0,
       "done_at": null,
       "source": "Waiting On Others",
-      "sort": 1
+      "sort": 7
     },
     {
       "section": "waiting_on",
@@ -483,7 +410,7 @@
       "done": 0,
       "done_at": null,
       "source": "Waiting On Others",
-      "sort": 2
+      "sort": 0
     },
     {
       "section": "waiting_on",
@@ -498,7 +425,7 @@
       "done": 0,
       "done_at": null,
       "source": "Waiting On Others",
-      "sort": 3
+      "sort": 1
     },
     {
       "section": "waiting_on",
@@ -513,7 +440,7 @@
       "done": 0,
       "done_at": null,
       "source": "Waiting On Others",
-      "sort": 4
+      "sort": 2
     },
     {
       "section": "waiting_on",
@@ -528,7 +455,7 @@
       "done": 0,
       "done_at": null,
       "source": "Waiting On Others",
-      "sort": 5
+      "sort": 3
     },
     {
       "section": "waiting_on",
@@ -543,7 +470,7 @@
       "done": 0,
       "done_at": null,
       "source": "Waiting On Others",
-      "sort": 6
+      "sort": 4
     },
     {
       "section": "waiting_on",
@@ -558,7 +485,7 @@
       "done": 0,
       "done_at": null,
       "source": "Waiting On Others",
-      "sort": 7
+      "sort": 5
     },
     {
       "section": "waiting_on",
@@ -573,7 +500,7 @@
       "done": 0,
       "done_at": null,
       "source": "Waiting On Others",
-      "sort": 8
+      "sort": 6
     },
     {
       "section": "waiting_on",
@@ -588,7 +515,7 @@
       "done": 0,
       "done_at": null,
       "source": "Waiting On Others",
-      "sort": 9
+      "sort": 7
     },
     {
       "section": "waiting_on",
@@ -603,7 +530,7 @@
       "done": 0,
       "done_at": null,
       "source": "Waiting On Others",
-      "sort": 10
+      "sort": 8
     },
     {
       "section": "waiting_on",
@@ -618,7 +545,7 @@
       "done": 0,
       "done_at": null,
       "source": "Waiting On Others",
-      "sort": 11
+      "sort": 9
     },
     {
       "section": "waiting_on",
@@ -633,7 +560,7 @@
       "done": 0,
       "done_at": null,
       "source": "Waiting On Others",
-      "sort": 12
+      "sort": 10
     },
     {
       "section": "waiting_on",
@@ -648,7 +575,7 @@
       "done": 0,
       "done_at": null,
       "source": "Waiting On Others",
-      "sort": 13
+      "sort": 11
     },
     {
       "section": "waiting_on",
@@ -663,7 +590,7 @@
       "done": 0,
       "done_at": null,
       "source": "Waiting On Others",
-      "sort": 14
+      "sort": 12
     },
     {
       "section": "waiting_on",
@@ -678,7 +605,7 @@
       "done": 0,
       "done_at": null,
       "source": "Waiting On Others",
-      "sort": 15
+      "sort": 13
     },
     {
       "section": "waiting_on",
@@ -693,7 +620,7 @@
       "done": 0,
       "done_at": null,
       "source": "Waiting On Others",
-      "sort": 16
+      "sort": 14
     },
     {
       "section": "customer_situation",
@@ -919,6 +846,21 @@
       "done_at": "2026-06-11",
       "source": "Completed (last 30 days)",
       "sort": 9
+    },
+    {
+      "section": "carryover",
+      "text": "Support calibration aging",
+      "meta": "",
+      "item_date": "2026-06-11",
+      "project": "Support Calibration",
+      "owner": null,
+      "status_label": null,
+      "status_class": null,
+      "context": "18 cases 30d+, 12 cases 90d+; oldest 478 (STA superuser-pw, 00015828)",
+      "done": 0,
+      "done_at": null,
+      "source": "Calibration Snapshot",
+      "sort": 8
     }
   ],
   "project_refs": [

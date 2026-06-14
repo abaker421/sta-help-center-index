@@ -24,7 +24,7 @@ export const onRequestGet: PagesFunction = async ({ env, data }) => {
 
   try {
     // The owner's briefing rows (live, ordered for assembly). One round trip.
-    const [stateRes, itemsRes, refsRes] = await env.DB.batch([
+    const [stateRes, itemsRes, refsRes, propsRes] = await env.DB.batch([
       env.DB.prepare(
         `SELECT owner_email, generated_at, calibration_snapshot, needs_attention,
                 todays_meetings, version
@@ -46,14 +46,41 @@ export const onRequestGet: PagesFunction = async ({ env, data }) => {
           WHERE owner_email = ? AND deleted_at IS NULL
           ORDER BY sort, id`
       ).bind(owner),
+      // PB2c: the owner's PENDING proposal queue (Pending Your Review). id + version
+      // carried so Approve/Deny send expected_version (compare-and-set).
+      env.DB.prepare(
+        `SELECT id, version, target_section, proposed_text, item_date, project, owner_field,
+                status_label, status_class, context, source
+           FROM briefing_proposals
+          WHERE owner_email = ? AND status = 'pending' AND deleted_at IS NULL
+          ORDER BY created_at, id`
+      ).bind(owner),
     ]);
 
     const state = (stateRes.results?.[0] as any) ?? null;
     const items = (itemsRes.results as any[]) ?? [];
     const refs = (refsRes.results as any[]) ?? [];
+    const proposalRows = ((propsRes.results as any[]) ?? []);
 
-    // A user with no rows at all -> valid empty briefing (200), not a 404.
-    if (!state && items.length === 0 && refs.length === 0) {
+    // camelCase the proposal rows the tab consumes (mirrors the item payload shape).
+    const proposals = proposalRows.map((p) => ({
+      id: p.id,
+      version: p.version,
+      targetSection: p.target_section,
+      text: p.proposed_text,
+      itemDate: p.item_date ?? null,
+      project: p.project ?? null,
+      owner: p.owner_field ?? null,
+      statusLabel: p.status_label ?? null,
+      statusClass: p.status_class ?? null,
+      context: p.context ?? null,
+      source: p.source ?? null,
+    }));
+
+    // A user with no rows at all -> valid empty briefing (200), not a 404. (proposals
+    // counted too, so a proposals-only user still gets them; the truly-empty payload is
+    // byte-identical to PB1.)
+    if (!state && items.length === 0 && refs.length === 0 && proposals.length === 0) {
       return json({
         owner,
         generated: null,
@@ -98,7 +125,9 @@ export const onRequestGet: PagesFunction = async ({ env, data }) => {
       });
     }
 
-    return json(assembleBriefing({ owner, state, items, refs, projectsById }));
+    const payload = assembleBriefing({ owner, state, items, refs, projectsById });
+    (payload as any).proposals = proposals;
+    return json(payload);
   } catch (e) {
     // Never leak the raw exception to the client (KB module-02).
     console.error("GET /api/briefing/me failed:", e);
