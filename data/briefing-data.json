@@ -1,0 +1,634 @@
+{
+  "owner_email": "adamb@k12sta.com",
+  "generated": "2026-06-12T00:00:00.000Z",
+  "calibration_snapshot": {
+    "asOf": "2026-06-11",
+    "open": "22 (of 28 total; 6 Closed)",
+    "new": "+1 (TRAK photos, New 14d)",
+    "closed": "0",
+    "aging30": "18",
+    "aging90": "12",
+    "oldest": "478 (STA superuser-pw, 00015828)",
+    "trend": [
+      "Open cases: 22 (of 28 total; 6 Closed) (as of 2026-06-11)",
+      "New vs prior: +1 (TRAK photos, New 14d)",
+      "Closed vs prior: 0",
+      "Aging 30d+: 18; aging 90d+: 12",
+      "Oldest open case: 478 (STA superuser-pw, 00015828)"
+    ],
+    "rows": [
+      {
+        "date": "2026-06-04",
+        "open": "baseline",
+        "new": "-",
+        "closed": "-",
+        "aging30": "-",
+        "aging90": "-",
+        "oldest": "211 (Jordan SD)"
+      },
+      {
+        "date": "2026-06-05",
+        "open": "24 (of 29 total; 5 Closed)",
+        "new": "0",
+        "closed": "0",
+        "aging30": "21",
+        "aging90": "12",
+        "oldest": "541 (Lake Stevens SD, 00015291)"
+      },
+      {
+        "date": "2026-06-08",
+        "open": "21 (of 27 total; 6 Closed)",
+        "new": "0",
+        "closed": "+1 closed (Lake Stevens)",
+        "aging30": "18",
+        "aging90": "12",
+        "oldest": "475 (STA superuser-pw, 00015828)"
+      },
+      {
+        "date": "2026-06-10",
+        "open": "21 (of 27 total; 6 Closed)",
+        "new": "0",
+        "closed": "0",
+        "aging30": "18",
+        "aging90": "12",
+        "oldest": "477 (STA superuser-pw, 00015828)"
+      },
+      {
+        "date": "2026-06-11",
+        "open": "22 (of 28 total; 6 Closed)",
+        "new": "+1 (TRAK photos, New 14d)",
+        "closed": "0",
+        "aging30": "18",
+        "aging90": "12",
+        "oldest": "478 (STA superuser-pw, 00015828)"
+      }
+    ]
+  },
+  "needs_attention": [
+    {
+      "text": "Email Pat re: West Orange Cove TT7 humidity solution; loop in Ken/CMI",
+      "meta": "Pending - 9d open (since 2026-06-03)"
+    },
+    {
+      "text": "Update the PA situation report with accurate data",
+      "meta": "Pending - 8d open (since 2026-06-04)"
+    },
+    {
+      "text": "Gain access to Skyward training portal to self-educate on Skyward's positive-attendance handling",
+      "meta": "Pending - 8d open (since 2026-06-04)"
+    },
+    {
+      "text": "Coordinate TimeClock release date with Cody before rollout",
+      "meta": "Pending - 8d open (since 2026-06-04)"
+    },
+    {
+      "text": "Send Andrew the spec sheet on Grasshopper's new AI feature",
+      "meta": "Pending - 8d open (since 2026-06-04)"
+    },
+    {
+      "text": "TimeClock RC testing + feedback",
+      "meta": "Waiting on - 8d open (since 2026-06-04)"
+    },
+    {
+      "text": "ID product demo",
+      "meta": "Waiting on - 8d open (since 2026-06-04)"
+    },
+    {
+      "text": "SchoolTRAK: create dedicated subdomain (Adam)",
+      "meta": "Carryover - 7d open (since 2026-06-05)"
+    },
+    {
+      "text": "Support calibration aging",
+      "meta": "18 cases 30d+, 12 cases 90d+; oldest 478 (STA superuser-pw, 00015828)"
+    }
+  ],
+  "todays_meetings": [],
+  "items": [
+    {
+      "section": "carryover",
+      "text": "SchoolTRAK: create dedicated subdomain (Adam)",
+      "meta": "flagged 2026-06-05 - Cruxlab action due 6/5 (Fri); gates SOW testing - still not confirmed done as of 6/11 (6 days)",
+      "done": 0,
+      "done_at": null,
+      "source": "Carryover Log",
+      "sort": 0
+    },
+    {
+      "section": "pending",
+      "text": "Send Ridgewood their onboarding next steps",
+      "meta": "Requested by Support Daily Connect - 2026-06-10 - Customer paid but hasn't completed onboarding form",
+      "done": 0,
+      "done_at": null,
+      "source": "Pending Adam's Action",
+      "sort": 0
+    },
+    {
+      "section": "pending",
+      "text": "July payment / migration timing - confirm with Pat",
+      "meta": "Requested by Support Daily Connect - 2026-06-10 - Migration next week but customer can't pay until July; was to be raised in 6/10 huddle (now held) - confirm outcome",
+      "done": 0,
+      "done_at": null,
+      "source": "Pending Adam's Action",
+      "sort": 1
+    },
+    {
+      "section": "pending",
+      "text": "Create ID relocation/migration self-service docs",
+      "meta": "Requested by ID Badging Review - 2026-06-10 - Decision: charge for migrations, customers self-relocate; today's \"Finish ID Docs\" 3:30 PM block",
+      "done": 0,
+      "done_at": null,
+      "source": "Pending Adam's Action",
+      "sort": 2
+    },
+    {
+      "section": "pending",
+      "text": "Write field-remap help article (or short video)",
+      "meta": "Requested by ID Badging Review - 2026-06-10 - How-to on remapping fields; pairs with relocation docs",
+      "done": 0,
+      "done_at": null,
+      "source": "Pending Adam's Action",
+      "sort": 3
+    },
+    {
+      "section": "pending",
+      "text": "Evaluate Tango (~$20/mo) for AI how-to videos",
+      "meta": "Requested by ID Badging Review - 2026-06-10 - AI-assisted how-to video creation tool",
+      "done": 0,
+      "done_at": null,
+      "source": "Pending Adam's Action",
+      "sort": 4
+    },
+    {
+      "section": "pending",
+      "text": "Build dev-time tracking portal",
+      "meta": "Requested by ID Badging Review - 2026-06-10 - New portal to record dev time; Chris to brief Tanya on process change",
+      "done": 0,
+      "done_at": null,
+      "source": "Pending Adam's Action",
+      "sort": 5
+    },
+    {
+      "section": "pending",
+      "text": "Send Chris & Tyler the workflow questionnaire",
+      "meta": "Requested by ID Badging Review - 2026-06-10 - HARD DUE Mon 6/15; they complete the implementation-steps doc, uploaded to the AI tool",
+      "done": 0,
+      "done_at": null,
+      "source": "Pending Adam's Action",
+      "sort": 6
+    },
+    {
+      "section": "pending",
+      "text": "Troubleshoot the \"switched jobs\" bug with Skyward",
+      "meta": "Requested by Weekly Huddle - 2026-06-10 - Bug hits VirtuaTime + time clocks; Skyward troubleshooting in progress",
+      "done": 0,
+      "done_at": null,
+      "source": "Pending Adam's Action",
+      "sort": 7
+    },
+    {
+      "section": "pending",
+      "text": "Follow up on renewal-contact pricing changes",
+      "meta": "Requested by Weekly Huddle - 2026-06-10 - After the contact returns from vacation next week",
+      "done": 0,
+      "done_at": null,
+      "source": "Pending Adam's Action",
+      "sort": 8
+    },
+    {
+      "section": "pending",
+      "text": "Confirm/schedule Pearland ID relocation with Joy Johnson",
+      "meta": "Requested by Support Daily Connect - 2026-06-08 - ID relocation only (not full migration): new V6 non-annual license + extra printer; SMS needs ODBC setup; contact Joy Johnson",
+      "done": 0,
+      "done_at": null,
+      "source": "Pending Adam's Action",
+      "sort": 9
+    },
+    {
+      "section": "pending",
+      "text": "Create the SchoolTRAK dedicated subdomain",
+      "meta": "Requested by Cruxlab call - 2026-06-05 - Due 6/5; gates SOW testing of completed items; still unconfirmed as of 6/10 (5 days open)",
+      "done": 0,
+      "done_at": null,
+      "source": "Pending Adam's Action",
+      "sort": 10
+    },
+    {
+      "section": "pending",
+      "text": "Communicate San Marcos ESD barcode reader resolution to customer (plain language)",
+      "meta": "Requested by Support Daily Connect - 2026-06-05 - \"Static shock,\" dry TX climate a factor; avoid jargon/finger-pointing. Owner unconfirmed - flag if Chris/support owns",
+      "done": 0,
+      "done_at": null,
+      "source": "Pending Adam's Action",
+      "sort": 11
+    },
+    {
+      "section": "pending",
+      "text": "Update the PA situation report with accurate data",
+      "meta": "Requested by Support Daily Connect - 2026-06-04 - SchoolTRAK PA turnaround - replace assumptions with real figures on why PA is underperforming",
+      "done": 0,
+      "done_at": null,
+      "source": "Pending Adam's Action",
+      "sort": 12
+    },
+    {
+      "section": "pending",
+      "text": "Gain access to Skyward training portal to self-educate on Skyward's positive-attendance handling",
+      "meta": "Requested by Support Daily Connect - 2026-06-04 - NOTE: the 6/4 \"training block today\" framing is stale - today's 10-11 AM block is ADA/WCAG training with Kelsey, not Skyward PA",
+      "done": 0,
+      "done_at": null,
+      "source": "Pending Adam's Action",
+      "sort": 13
+    },
+    {
+      "section": "pending",
+      "text": "Coordinate TimeClock release date with Cody before rollout",
+      "meta": "Requested by TimeClock dev call - 2026-06-04 - Hold rollout until coordinated, even if Skyward QA approves",
+      "done": 0,
+      "done_at": null,
+      "source": "Pending Adam's Action",
+      "sort": 14
+    },
+    {
+      "section": "pending",
+      "text": "Send Andrew the spec sheet on Grasshopper's new AI feature",
+      "meta": "Requested by Andrew (Product Dev call) - 2026-06-04 - Action item assigned to Adam. LIKELY OBE: on 6/8 Daily Connect, Tyler decided not to move forward with the Grasshopper AI integration - confirm before closing",
+      "done": 0,
+      "done_at": null,
+      "source": "Pending Adam's Action",
+      "sort": 15
+    },
+    {
+      "section": "pending",
+      "text": "Send Wilson County session recording to Bennett",
+      "meta": "Requested by Wilson County ID Support - 2026-06-11 - So Bennett can finish the last ID machine independently (Adam/Chris own; pairs with Waiting-On final-machine item)",
+      "done": 0,
+      "done_at": null,
+      "source": "Pending Adam's Action",
+      "sort": 16
+    },
+    {
+      "section": "pending",
+      "text": "Raise grayed-out \"Gone for the Day\" button UI on the 6/12 dev call",
+      "meta": "Requested by TimeClock App Status check - 2026-06-11 - Button is grayed out; flagged for tomorrow's *Internal* Product Dev call (also on the 6/12 agenda: \"Color of Out/GFTD buttons\")",
+      "done": 0,
+      "done_at": null,
+      "source": "Pending Adam's Action",
+      "sort": 17
+    },
+    {
+      "section": "pending",
+      "text": "Email Pat re: West Orange Cove TT7 humidity solution; loop in Ken/CMI",
+      "meta": "Requested by Weekly Huddle - 2026-06-03 - NEMA enclosure recommended, 2-3 wk; Adam committed to follow up with Pat",
+      "done": 0,
+      "done_at": null,
+      "source": "Pending Adam's Action",
+      "sort": 18
+    },
+    {
+      "section": "waiting_on",
+      "text": "TimeClock RC testing + feedback",
+      "meta": "Sent to Skyward QA team - 2026-06-04 - RC shared; QA testing in progress",
+      "done": 0,
+      "done_at": null,
+      "source": "Waiting On Others",
+      "sort": 0
+    },
+    {
+      "section": "waiting_on",
+      "text": "ID product demo",
+      "meta": "Sent to Brian (via Andrew) - 2026-06-04 - Andrew to text Brian to arrange",
+      "done": 0,
+      "done_at": null,
+      "source": "Waiting On Others",
+      "sort": 1
+    },
+    {
+      "section": "waiting_on",
+      "text": "SchoolTRAK period-rule page (item #14) mockup review + estimate",
+      "meta": "Sent to Cruxlab - 2026-06-05 - Cruxlab reviewing #14 UI mockup; effort estimate pending",
+      "done": 0,
+      "done_at": null,
+      "source": "Waiting On Others",
+      "sort": 2
+    },
+    {
+      "section": "waiting_on",
+      "text": "Portage DLL error on client (2nd failed install)",
+      "meta": "Sent to Chris -> Banko - 2026-06-05 - Chris to send Banko screenshot/message; likely permissions issue",
+      "done": 0,
+      "done_at": null,
+      "source": "Waiting On Others",
+      "sort": 3
+    },
+    {
+      "section": "waiting_on",
+      "text": "Lake Dallas printer issue - new case",
+      "meta": "Sent to Chris (new case) - 2026-06-08 - Separate from completed April cleaning/ruler order; start a NEW email thread (Lake Dallas replies to old threads)",
+      "done": 0,
+      "done_at": null,
+      "source": "Waiting On Others",
+      "sort": 4
+    },
+    {
+      "section": "waiting_on",
+      "text": "Blue Star RMA / diagnostic fee structure clarification",
+      "meta": "Sent to Tanya & Joanie -> Blue Star - 2026-06-10 - New $150 diagnostic fee just to open an RMA + time-and-material (was free on-site). Dallas case hit $300. Clarify whether service agreements cover it; realign.",
+      "done": 0,
+      "done_at": null,
+      "source": "Waiting On Others",
+      "sort": 5
+    },
+    {
+      "section": "waiting_on",
+      "text": "ID install help - 2 stuck customers",
+      "meta": "Sent to Bango (meeting next week) - 2026-06-10 - 3 new ID customers stuck on install; Adam meets Bango next week for 2; 3rd may resolve via extra files from Bango",
+      "done": 0,
+      "done_at": null,
+      "source": "Waiting On Others",
+      "sort": 6
+    },
+    {
+      "section": "waiting_on",
+      "text": "St. Marcus Lutheran renewal",
+      "meta": "Sent to Dan -> customer - 2026-06-10 - Not renewing School Track; Dan called/emailed, awaiting response (also tracked in Customer Situations)",
+      "done": 0,
+      "done_at": null,
+      "source": "Waiting On Others",
+      "sort": 7
+    },
+    {
+      "section": "waiting_on",
+      "text": "Canyons RFP (products already purchased)",
+      "meta": "Sent to Pat -> Eric Taylor - 2026-06-10 - RFP received for products Canyons already bought; Pat to contact Eric Taylor to understand it",
+      "done": 0,
+      "done_at": null,
+      "source": "Waiting On Others",
+      "sort": 8
+    },
+    {
+      "section": "waiting_on",
+      "text": "Comp-time on clocks - was it ever a feature?",
+      "meta": "Sent to Chris -> CMI - 2026-06-11 - South San Antonio + 1 other asking about comp-time support on clocks; likely not a current feature - log as feature request in Trello pending Cody confirmation",
+      "done": 0,
+      "done_at": null,
+      "source": "Waiting On Others",
+      "sort": 9
+    },
+    {
+      "section": "waiting_on",
+      "text": "Lake Dallas RMA process summary",
+      "meta": "Sent to Andrew -> customer (email) + log in Claw - 2026-06-11 - Physical damage/improper maintenance, outside standard coverage; diagnostic fee before RMA (in-warranty upfront, out-of-warranty add to opportunity)",
+      "done": 0,
+      "done_at": null,
+      "source": "Waiting On Others",
+      "sort": 10
+    },
+    {
+      "section": "waiting_on",
+      "text": "Renewals doc review scheduling",
+      "meta": "Sent to Tyler -> Tanya - 2026-06-11 - Schedule ASAP (EOY time pressure); scope = the four + Tanya, not full school-tech team; doc currently accurate on parts coverage (first 5 yrs, excl. physical damage/negligence)",
+      "done": 0,
+      "done_at": null,
+      "source": "Waiting On Others",
+      "sort": 11
+    },
+    {
+      "section": "waiting_on",
+      "text": "Sandbox test data cleanup/replacement",
+      "meta": "Sent to Cody (Skyward) - 2026-06-11 - Corrupted sandbox data to be replaced with fresh internal dataset; blocks clean clock testing",
+      "done": 0,
+      "done_at": null,
+      "source": "Waiting On Others",
+      "sort": 12
+    },
+    {
+      "section": "waiting_on",
+      "text": "TT7 clock shipment to dev team",
+      "meta": "Sent to Cody (Skyward) - 2026-06-11 - None of the 12 clocks on hand are the right model; Cody shipping a TT7 + confirm reader-attachment reqs (coordinate Kevin/Jake); gates physical clock testing",
+      "done": 0,
+      "done_at": null,
+      "source": "Waiting On Others",
+      "sort": 13
+    },
+    {
+      "section": "waiting_on",
+      "text": "Carmen remaining-error detail",
+      "meta": "Sent to Cody -> Carmen - 2026-06-11 - More detail needed on \"try to add today's transaction\" error + edit errors (most reported issues were config, not bugs)",
+      "done": 0,
+      "done_at": null,
+      "source": "Waiting On Others",
+      "sort": 14
+    },
+    {
+      "section": "waiting_on",
+      "text": "\"Temporarily Out\" wording verify + clock testing sign-off",
+      "meta": "Sent to Jay / Cody - 2026-06-11 - Verify wording in sandbox, then confirm clock testing sign-off",
+      "done": 0,
+      "done_at": null,
+      "source": "Waiting On Others",
+      "sort": 15
+    },
+    {
+      "section": "waiting_on",
+      "text": "Wilson County - final ID machine",
+      "meta": "Sent to Bennett / Cook (Wilson County) - 2026-06-11 - Watertown + Green Hill resolved; 1 machine left (not reached on call); Bennett has session recording; will email if issues",
+      "done": 0,
+      "done_at": null,
+      "source": "Waiting On Others",
+      "sort": 16
+    },
+    {
+      "section": "customer_situation",
+      "text": "Zion Benton - Switching to Infinite Campus; won't renew SchoolTRAK. ID renewal (7 licenses, Aug) uncertain - send renewal anyway",
+      "meta": "Owner: Adam - At risk",
+      "done": 0,
+      "done_at": null,
+      "source": "Customer Situations",
+      "sort": 0
+    },
+    {
+      "section": "customer_situation",
+      "text": "St. Marcus Lutheran - Not renewing School Track (SchoolTRAK). Dan has called and emailed - no response yet. Surfaced 6/10 Weekly Huddle.",
+      "meta": "Owner: Dan - At risk",
+      "done": 0,
+      "done_at": null,
+      "source": "Customer Situations",
+      "sort": 1
+    },
+    {
+      "section": "customer_situation",
+      "text": "SchoolTRAK Positive Attendance (product-wide) - PA product underperforming; root causes flagged as thin docs/messaging + Skyward's own PA struggles (unresponsive ~1yr, redirecting customers to STA). Some districts leaving Skyward SIS rather than adopt cumulative/PA. Framed as a research/turnaround initiative. Surfaced again 6/4 Support Daily Connect.",
+      "meta": "Owner: Adam / team - At risk",
+      "done": 0,
+      "done_at": null,
+      "source": "Customer Situations",
+      "sort": 2
+    },
+    {
+      "section": "customer_situation",
+      "text": "Wisconsin Rapids Public SD - SchoolTRAK Kiosk Mode case now 285d (On Hold); QOL feedback list pending Chris review (2nd Wis Rapids case #18412 now Closed)",
+      "meta": "Owner: Chris - Watch",
+      "done": 0,
+      "done_at": null,
+      "source": "Customer Situations",
+      "sort": 3
+    },
+    {
+      "section": "customer_situation",
+      "text": "Orland Park CHSD 230 - SchoolTRAK error-message case 265d, \"Waiting on Skyward input\" - tied to Skyward PA responsiveness gap",
+      "meta": "Owner: Chris - Watch",
+      "done": 0,
+      "done_at": null,
+      "source": "Customer Situations",
+      "sort": 4
+    },
+    {
+      "section": "completed",
+      "text": "SchoolTRAK: show-password button (login + admin), single-entity auto-select with teacher name, teacher name across templates",
+      "meta": "Cruxlab sprint",
+      "done": 1,
+      "done_at": "2026-05-29",
+      "source": "Completed (last 30 days)",
+      "sort": 0
+    },
+    {
+      "section": "completed",
+      "text": "TimeClock: job-switching + status fixes; status buttons reduced to 6",
+      "meta": "Folded into release candidate",
+      "done": 1,
+      "done_at": "~2026-06-04",
+      "source": "Completed (last 30 days)",
+      "sort": 1
+    },
+    {
+      "section": "completed",
+      "text": "SchoolTRAK: GitHub/hub access for Oleg Rakhov resolved",
+      "meta": "Cleared the 5/29 carryover",
+      "done": 1,
+      "done_at": "2026-06-05",
+      "source": "Completed (last 30 days)",
+      "sort": 2
+    },
+    {
+      "section": "completed",
+      "text": "SchoolTRAK: SOW #2 year-entry corner notification, #15 admin chart \"unknown\"->\"unmapped\" + show/hide toggle, #16 user page last-login for admins",
+      "meta": "Cruxlab sprint; pending tracker update",
+      "done": 1,
+      "done_at": "2026-06-05",
+      "source": "Completed (last 30 days)",
+      "sort": 3
+    },
+    {
+      "section": "completed",
+      "text": "Support: Lake Stevens SD calibration case (00015291, 541d - longest-open) closed",
+      "meta": "Per 6/8 calibration report",
+      "done": 1,
+      "done_at": "~2026-06-08",
+      "source": "Completed (last 30 days)",
+      "sort": 4
+    },
+    {
+      "section": "completed",
+      "text": "Support: San Marcos CISD + Wilson County SD dropped from calibration set",
+      "meta": "No longer in report (resolved or filter change)",
+      "done": 1,
+      "done_at": "~2026-06-08",
+      "source": "Completed (last 30 days)",
+      "sort": 5
+    },
+    {
+      "section": "completed",
+      "text": "SchoolTRAK: MailChimp account set up by Chris (SOW #4 email service unblocked)",
+      "meta": "Cleared the 6/5 carryover + pending item",
+      "done": 1,
+      "done_at": "2026-06-10",
+      "source": "Completed (last 30 days)",
+      "sort": 6
+    },
+    {
+      "section": "completed",
+      "text": "ID Badging Review held; 6/10 ID decisions captured (charge for migrations, summer = mitigation, dev-time portal)",
+      "meta": "Pending tracker update",
+      "done": 1,
+      "done_at": "2026-06-10",
+      "source": "Completed (last 30 days)",
+      "sort": 7
+    },
+    {
+      "section": "completed",
+      "text": "Wilson County ID: Watertown HS + Green Hill HS fully resolved (v567->v582 in-place upgrade, design re-save, Primacy 1->2 printer fix)",
+      "meta": "1 machine remains (Bennett has recording)",
+      "done": 1,
+      "done_at": "2026-06-11",
+      "source": "Completed (last 30 days)",
+      "sort": 8
+    },
+    {
+      "section": "completed",
+      "text": "TimeClock: 500 errors traced to a config change (week start Tue->Mon), not a product bug; most of Carmen's reported errors confirmed config-related",
+      "meta": "Pending tracker update (TimeClock)",
+      "done": 1,
+      "done_at": "2026-06-11",
+      "source": "Completed (last 30 days)",
+      "sort": 9
+    }
+  ],
+  "project_refs": [
+    {
+      "project_id": 1,
+      "name": "SchoolTRAK",
+      "personal_note": null,
+      "personal_timeline": null,
+      "sort": 0
+    },
+    {
+      "project_id": 2,
+      "name": "TimeClock App / Gone for the Day",
+      "personal_note": null,
+      "personal_timeline": null,
+      "sort": 1
+    },
+    {
+      "project_id": 3,
+      "name": "VirtuaTime",
+      "personal_note": null,
+      "personal_timeline": null,
+      "sort": 2
+    },
+    {
+      "project_id": 4,
+      "name": "ID Product (Brian's)",
+      "personal_note": null,
+      "personal_timeline": null,
+      "sort": 3
+    },
+    {
+      "project_id": 5,
+      "name": "ID Badging (STA)",
+      "personal_note": null,
+      "personal_timeline": null,
+      "sort": 4
+    },
+    {
+      "project_id": 6,
+      "name": "Skyward Partnership & Lead Gen",
+      "personal_note": null,
+      "personal_timeline": null,
+      "sort": 5
+    },
+    {
+      "project_id": 7,
+      "name": "Podcast (Behind the Bell)",
+      "personal_note": null,
+      "personal_timeline": null,
+      "sort": 6
+    },
+    {
+      "project_id": 8,
+      "name": "CMI TT3 hardware",
+      "personal_note": null,
+      "personal_timeline": null,
+      "sort": 7
+    }
+  ]
+}
