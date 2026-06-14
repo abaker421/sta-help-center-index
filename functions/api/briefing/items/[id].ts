@@ -27,9 +27,15 @@ import {
   BRIEFING_EDITABLE_SECTIONS,
 } from "../../../_lib/writes.js";
 
-// `done` is stored 0/1; `sort` is an integer. Coerce client-supplied values.
+// `done` is stored 0/1; `sort` is an integer. Coerce client-supplied values, and
+// stamp `done_at` SERVER-SIDE on a completion toggle (never trusted from the client):
+// completing sets today's date, restoring clears it. done_at is not in the client
+// whitelist, so this is the only path that can set it.
 function coerce(fields: Record<string, any>) {
-  if ("done" in fields) fields.done = fields.done ? 1 : 0;
+  if ("done" in fields) {
+    fields.done = fields.done ? 1 : 0;
+    fields.done_at = fields.done ? new Date().toISOString().slice(0, 10) : null;
+  }
   if ("sort" in fields) fields.sort = Number.isInteger(fields.sort) ? fields.sort : 0;
   return fields;
 }

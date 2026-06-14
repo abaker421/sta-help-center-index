@@ -247,6 +247,12 @@ textarea.ef-ctl{min-height:44px;resize:vertical;line-height:1.4}
 .md-prop-act{display:flex;gap:6px;margin-top:9px}
 .md-mini{font-family:'Roboto',Arial,sans-serif;font-size:8.5pt;font-weight:600;border-radius:7px;padding:5px 12px;min-height:24px;border:1px solid #d8e0e8;background:#f4f7fa;color:#7c8a99;cursor:not-allowed}
 .md-prop-note{font-size:8.5pt;color:#5a6b7b;font-style:italic;margin:0 0 10px}
+.md-prop-form{display:flex;flex-direction:column;gap:7px;margin-top:9px;background:#f7fafc;border:1px solid #d8e0e8;border-radius:8px;padding:10px 12px}
+.md-prop-form label{display:flex;flex-direction:column;gap:3px}
+.md-prop-form label span{font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#5a6b7b}
+.md-prop-form input{font-family:'Roboto',Arial,sans-serif;font-size:9.5pt;color:#1f2933;border:1px solid #9bb4c9;border-radius:6px;padding:6px 8px;background:#fff}
+.md-prop-form input:focus{outline:2px solid #006098;outline-offset:0;border-color:#006098}
+.md-prop-err{color:#b42318;font-size:8.5pt;font-weight:600;margin:0}
 .md-empty-note{color:#5a6b7b;font-size:9.5pt;font-style:italic;margin:0}
 /* ---- PB2b: in-tab editing (complete-toggle, inline edit, reclassify, add, delete, 409) ---- */
 .md-chk{width:16px;height:16px;accent-color:#6bc04b;cursor:pointer;margin-top:2px}
@@ -275,6 +281,28 @@ textarea.ef-ctl{min-height:44px;resize:vertical;line-height:1.4}
 .md-conflict b{color:#7a4a00}
 .md-conflict-act{margin-top:8px;display:flex;gap:8px}
 .md-tbl td.md-actcell{width:1%;white-space:nowrap}
+/* ---- PB2b.1: inline edit-in-place, Complete-with-note, rotating disclosure carets ---- */
+.md-rowbtn-primary{border-color:#6bc04b;background:#f1faec;color:#2f7d12}
+.md-rowbtn-primary:hover{background:#6bc04b;color:#10261a}
+.md-cellinput{width:100%;font-family:'Roboto',Arial,sans-serif;font-size:9.5pt;color:#1f2933;border:1px solid #9bb4c9;border-radius:6px;padding:5px 7px;background:#fff}
+.md-cellinput:focus{outline:2px solid #006098;outline-offset:0;border-color:#006098}
+tr.md-editing td{background:#f7fafc;border-bottom:none;vertical-align:top}
+tr.md-editing-extra td{background:#f7fafc;padding-top:0}
+.md-editextra{display:flex;flex-wrap:wrap;gap:12px;padding:2px 0 4px}
+.md-editextra label{display:flex;flex-direction:column;gap:3px;flex:1 1 220px}
+.md-editextra label.wide{flex-basis:100%}
+.md-editextra label span{font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#5a6b7b}
+.md-editextra textarea,.md-editextra select{font-family:'Roboto',Arial,sans-serif;font-size:9.5pt;color:#1f2933;border:1px solid #9bb4c9;border-radius:6px;padding:6px 8px;background:#fff}
+.md-editextra textarea{min-height:48px;resize:vertical;line-height:1.45}
+.md-complete-note{display:flex;flex-direction:column;gap:8px;background:#f1faec;border:1px solid #cde8bf;border-radius:8px;padding:10px 12px}
+.md-complete-note label{display:flex;flex-direction:column;gap:3px}
+.md-complete-note label span{font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#3f6b22}
+.md-complete-note input{font-family:'Roboto',Arial,sans-serif;font-size:9.5pt;border:1px solid #9bb4c9;border-radius:6px;padding:6px 8px;background:#fff}
+.md-donenote{font-size:8.5pt;color:#2f7d12;margin-top:4px}
+.md-ctx summary{list-style:none}
+.md-ctx summary::-webkit-details-marker{display:none}
+.md-ctx summary::before{content:'▸';display:inline-block;margin-right:7px;color:#006098;font-size:8pt;transition:transform .15s ease}
+.md-ctx[open] summary::before{transform:rotate(90deg)}
 .md-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 40px;text-align:center}
 .md-empty-icon{font-size:40px;margin-bottom:14px}
 .md-empty-title{font-size:12pt;font-weight:700;color:#445063;margin-bottom:6px}
@@ -1062,26 +1090,85 @@ function mdGreeting() {
   return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
 }
 
-// Sample proposals so the READ-ONLY Pending Your Review card layout is reviewable now.
-// The live proposal store + Approve/Deny writes land in PB2c; real proposals
-// (b.proposals from the API) take precedence over these the moment they exist.
-const SAMPLE_PROPOSALS = [
-  { id: 'sample-1', text: 'Log "comp-time on clocks" as a feature request', source: '6/11 Weekly Huddle', targetSection: 'Waiting On Others' },
-  { id: 'sample-2', text: 'Add Customer Situation: Canyons RFP (products already purchased)', source: '6/10 Daily Connect', targetSection: 'Customer Situations' },
-  { id: 'sample-3', text: 'Mark complete: Watertown HS + Green Hill HS ID resolved', source: '6/11 Wilson County ID', targetSection: 'Completed' },
-];
+// Display label for a proposal's target section (the queue shows where an approved
+// item will land).
+const BR_SECTION_TITLE = {
+  carryover: 'Your Tasks', pending: 'Pending Your Action',
+  waiting_on: 'Waiting On Others', customer_situation: 'Customer Situations',
+};
 
-// PB2b in-tab editing ---------------------------------------------------------
+// PB2c live proposal card: Approve (optional note) / Deny (REQUIRED reason). Approve
+// POSTs to .../approve (the item appears in target_section + card leaves the queue);
+// Deny POSTs to .../deny with the reason. Both send expected_version; onWrite handles
+// 409 reconcile + re-fetch. Owner-private (the API only ever returns the user's own).
+function ProposalCard({ p, onWrite, busy }) {
+  const [mode, setMode] = useState(null); // null | 'approve' | 'deny'
+  const [text, setText] = useState('');
+  const [err, setErr] = useState('');
+  const reset = () => { setMode(null); setText(''); setErr(''); };
+
+  const confirmApprove = async () => {
+    const body = { expected_version: p.version };
+    if (text.trim()) body.approve_note = text.trim();
+    const r = await onWrite('POST', '/api/briefing/proposals/' + p.id + '/approve', body);
+    if (r.ok) reset(); // on success the queue re-fetches and this card disappears
+  };
+  const confirmDeny = async () => {
+    if (!text.trim()) { setErr('A reason is required to deny (it teaches the assistant what not to propose).'); return; }
+    const r = await onWrite('POST', '/api/briefing/proposals/' + p.id + '/deny', { expected_version: p.version, deny_reason: text.trim() });
+    if (r.ok) reset();
+  };
+
+  return (
+    <div className="md-prop">
+      <div className="md-prop-text">{p.text}</div>
+      <div className="md-prop-meta">
+        {[p.source && ('from ' + p.source), p.targetSection && ('→ ' + (BR_SECTION_TITLE[p.targetSection] || p.targetSection))].filter(Boolean).join(' · ')}
+      </div>
+      {p.context && <details className="md-ctx"><summary>Why this was proposed</summary><p>{p.context}</p></details>}
+      {mode === null && (
+        <div className="md-prop-act">
+          <button type="button" className="md-rowbtn md-rowbtn-primary" disabled={busy} onClick={() => { setErr(''); setText(''); setMode('approve'); }}>Approve</button>
+          <button type="button" className="md-rowbtn md-rowbtn-danger" disabled={busy} onClick={() => { setErr(''); setText(''); setMode('deny'); }}>Deny</button>
+        </div>
+      )}
+      {mode === 'approve' && (
+        <div className="md-prop-form">
+          <label><span>Approve note (optional)</span>
+            <input type="text" value={text} disabled={busy} placeholder="optional - any note on the decision" onChange={e => setText(e.target.value)} /></label>
+          <div className="md-editactions">
+            <button type="button" className="md-save" disabled={busy} onClick={confirmApprove}>Confirm approve</button>
+            <button type="button" className="md-cancel" disabled={busy} onClick={reset}>Cancel</button>
+          </div>
+        </div>
+      )}
+      {mode === 'deny' && (
+        <div className="md-prop-form">
+          <label><span>Deny reason (required)</span>
+            <input type="text" value={text} disabled={busy} aria-invalid={!!err} placeholder="required - why this should not be added"
+              onChange={e => { setText(e.target.value); if (err) setErr(''); }} /></label>
+          {err && <p className="md-prop-err" role="alert">{err}</p>}
+          <div className="md-editactions">
+            <button type="button" className="md-save" disabled={busy} onClick={confirmDeny}>Confirm deny</button>
+            <button type="button" className="md-cancel" disabled={busy} onClick={reset}>Cancel</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// PB2b / PB2b.1 in-tab editing ------------------------------------------------
 // Column + edit-field spec per EDITABLE section (mirrors the server BRIEFING_EDITABLE_
 // SECTIONS). `pill` renders the status pill cell; `fmt` shortens an ISO date; `main`
-// is the cell that strikes through when done.
+// is the cell that strikes through when done. PB2b.1: carryover is now "Your Tasks".
 const BR_SECTION_DEFS = {
-  carryover: { title: 'Carryover',
+  carryover: { title: 'Your Tasks',
     cols: [{ key:'itemDate', header:'Date', cls:'md-dt', fmt:true }, { key:'project', header:'Project', cls:'md-proj' }, { key:'text', header:'Item', main:true }],
-    why: 'Why carried', edit: ['text','project','item_date','context'] },
+    why: 'Why / context', edit: ['text','project','item_date','context'] },
   customer_situation: { title: 'Customer Situations',
     cols: [{ key:'text', header:'Customer', cls:'md-cust', main:true }, { key:'statusLabel', header:'Status', pill:true }, { key:'owner', header:'Owner' }],
-    why: 'Situation', edit: ['text','owner','status','context'] },
+    why: 'Situation', edit: ['text','status','owner','context'] },
   waiting_on: { title: 'Waiting On Others',
     cols: [{ key:'text', header:'Item', main:true }, { key:'owner', header:'Sent to' }, { key:'itemDate', header:'Date', cls:'md-dt', fmt:true }, { key:'project', header:'Project', cls:'md-proj' }],
     why: 'Context', edit: ['text','owner','item_date','project','context'] },
@@ -1090,7 +1177,7 @@ const BR_SECTION_DEFS = {
     why: 'Context', edit: ['text','owner','item_date','context'] },
 };
 const BR_RECLASSIFY = [
-  { v:'carryover', label:'Carryover' }, { v:'pending', label:'Pending Your Action' },
+  { v:'carryover', label:'Your Tasks' }, { v:'pending', label:'Pending Your Action' },
   { v:'waiting_on', label:'Waiting On Others' }, { v:'customer_situation', label:'Customer Situations' },
 ];
 const BR_STATUS_OPTS = [
@@ -1098,91 +1185,95 @@ const BR_STATUS_OPTS = [
 ];
 const BR_STATUS_LABEL = { risk:'At risk', watch:'Watch', ok:'Resolved' };
 
-function brEditLabel(def, key) {
-  if (key === 'text') return (def.cols.find(c => c.key === 'text') || {}).header || 'Text';
-  if (key === 'owner') return (def.cols.find(c => c.key === 'owner') || {}).header || 'Owner';
-  if (key === 'item_date') return 'Date (YYYY-MM-DD)';
-  if (key === 'project') return 'Project';
-  if (key === 'context') return def.why;
-  if (key === 'status') return 'Status';
-  return key;
+// The form key behind a column cell (text/project/owner share their key; date -> item_date; pill -> status).
+function brColKey(c) { return c.pill ? 'status' : c.key === 'itemDate' ? 'item_date' : c.key; }
+
+// Pull the optional completion note stored as meta JSON ({"done_note":"..."}).
+function mdDoneNote(meta) {
+  try { const o = JSON.parse(meta); return o && typeof o.done_note === 'string' ? o.done_note : ''; }
+  catch (e) { return ''; }
 }
 
-// Inline edit / add form for one briefing row. row=null => add mode (no version,
-// no reclassify select). Calls onSave(fields) with the whitelisted field set.
-function BriefingEditForm({ sectionKey, row, onSave, onCancel, busy }) {
+// Inline EDIT-IN-PLACE row (PB2b.1): the row keeps its column shape but each cell
+// becomes an input; the longer context + the reclassify select sit in a sub-row.
+// row=null => add mode (no reclassify). Renders two <tr>s (cells + extras). Calls
+// onSave(fields) with the whitelisted field set; text is required.
+function BriefingEditRow({ sectionKey, row, ncols, busy, onSave, onCancel }) {
   const def = BR_SECTION_DEFS[sectionKey];
-  const seed = {};
-  for (const f of def.edit) {
-    if (f === 'status') seed.status = (row && row.statusClass) || '';
-    else if (f === 'item_date') seed.item_date = (row && row.itemDate) || '';
-    else seed[f] = (row && row[f]) || '';
-  }
+  const seed = { status: (row && row.statusClass) || '', item_date: (row && row.itemDate) || '', context: (row && row.context) || '' };
+  for (const c of def.cols) { const k = brColKey(c); if (k !== 'status' && k !== 'item_date') seed[k] = (row && row[c.key]) || ''; }
   const [form, setForm] = useState(seed);
   const [section, setSection] = useState(sectionKey);
   const set = (k, v) => setForm(s => ({ ...s, [k]: v }));
 
   const submit = () => {
+    if ((form.text || '').trim() === '') return; // text is required
     const fields = {};
     for (const f of def.edit) {
       if (f === 'status') { fields.status_class = form.status || null; fields.status_label = form.status ? BR_STATUS_LABEL[form.status] : null; }
       else fields[f] = (form[f] === '' ? null : form[f]);
     }
-    if ((form.text || '').trim() === '') return; // text is required
     fields.text = form.text.trim();
     if (row && section !== sectionKey) fields.section = section; // reclassify (edit only)
     onSave(fields);
   };
 
+  const cellInput = (c) => {
+    if (c.pill) return (
+      <select className="md-cellinput" value={form.status} disabled={busy} aria-label="Status" onChange={e => set('status', e.target.value)}>
+        {BR_STATUS_OPTS.map(o => <option key={o.v} value={o.v}>{o.label}</option>)}
+      </select>
+    );
+    if (c.key === 'itemDate') return <input className="md-cellinput" type="date" value={form.item_date} disabled={busy} aria-label="Date" onChange={e => set('item_date', e.target.value)} />;
+    const k = c.key;
+    return <input className="md-cellinput" type="text" value={form[k] || ''} disabled={busy} aria-label={c.header} onChange={e => set(k, e.target.value)} />;
+  };
+
   return (
-    <div className="md-editform">
-      <div className="md-editrow">
-        {def.edit.map(f => (
-          <div className={"md-editfield" + (f === 'text' || f === 'context' ? ' wide' : '')} key={f}>
-            <label>{brEditLabel(def, f)}</label>
-            {f === 'context'
-              ? <textarea value={form.context || ''} disabled={busy} onChange={e => set('context', e.target.value)} />
-              : f === 'status'
-                ? <select value={form.status || ''} disabled={busy} onChange={e => set('status', e.target.value)}>
-                    {BR_STATUS_OPTS.map(o => <option key={o.v} value={o.v}>{o.label}</option>)}
-                  </select>
-                : <input type="text" value={form[f] || ''} disabled={busy}
-                    placeholder={f === 'item_date' ? '2026-06-14' : ''}
-                    onChange={e => set(f, e.target.value)} />}
-          </div>
-        ))}
-        {row && (
-          <div className="md-editfield">
-            <label>Section (reclassify)</label>
-            <select value={section} disabled={busy} onChange={e => setSection(e.target.value)}>
-              {BR_RECLASSIFY.map(o => <option key={o.v} value={o.v}>{o.label}</option>)}
-            </select>
-          </div>
-        )}
-      </div>
-      <div className="md-editactions">
-        <button type="button" className="md-save" disabled={busy} onClick={submit}>{row ? 'Save' : 'Add'}</button>
-        <button type="button" className="md-cancel" disabled={busy} onClick={onCancel}>Cancel</button>
-      </div>
-    </div>
+    <>
+      <tr className="md-editing">
+        {def.cols.map(c => <td key={c.key} className={c.cls || ''}>{cellInput(c)}</td>)}
+        <td className="md-actcell"><div className="md-rowact">
+          <button type="button" className="md-rowbtn md-rowbtn-primary" disabled={busy} onClick={submit}>{row ? 'Save' : 'Add'}</button>
+          <button type="button" className="md-rowbtn" disabled={busy} onClick={onCancel}>Cancel</button>
+        </div></td>
+      </tr>
+      <tr className="md-editing-extra"><td colSpan={ncols}>
+        <div className="md-editextra">
+          {def.edit.includes('context') && (
+            <label className="wide"><span>{def.why}</span>
+              <textarea value={form.context || ''} disabled={busy} onChange={e => set('context', e.target.value)} /></label>
+          )}
+          {row && (
+            <label><span>Section (reclassify)</span>
+              <select value={section} disabled={busy} onChange={e => setSection(e.target.value)}>
+                {BR_RECLASSIFY.map(o => <option key={o.v} value={o.v}>{o.label}</option>)}
+              </select></label>
+          )}
+        </div>
+      </td></tr>
+    </>
   );
 }
 
-// One editable section table: complete-toggle, inline edit, reclassify, soft-delete,
-// add-item. All writes go through onWrite (which re-fetches on success / surfaces 409).
+// One editable section table. Per-row actions: Complete (primary, optional inline
+// note) + Edit (inline edit-in-place) + Delete (secondary soft-delete). Add-item per
+// section. All writes go through onWrite (re-fetches on success / surfaces 409).
 function BriefingTable({ sectionKey, rows, onWrite, busy }) {
   const def = BR_SECTION_DEFS[sectionKey];
   const [editId, setEditId] = useState(null);
   const [adding, setAdding] = useState(false);
-  const ncols = def.cols.length + 2; // leading checkbox + trailing actions
+  const [completingId, setCompletingId] = useState(null);
+  const [note, setNote] = useState('');
+  const ncols = def.cols.length + 1; // columns + actions (no leading checkbox column)
 
   const patch = (it, body) => onWrite('PATCH', '/api/briefing/items/' + it.id, { expected_version: it.version, ...body });
+  const startComplete = (it) => { setEditId(null); setAdding(false); setCompletingId(it.id); setNote(''); };
 
   return (
     <MdSec title={def.title} count={rows.length}>
       <table className="md-tbl">
         <thead><tr>
-          <th aria-label="Done"></th>
           {def.cols.map(c => <th key={c.key}>{c.header}</th>)}
           <th aria-label="Actions"></th>
         </tr></thead>
@@ -1190,51 +1281,68 @@ function BriefingTable({ sectionKey, rows, onWrite, busy }) {
           {rows.length === 0 && !adding && (
             <tr><td colSpan={ncols} className="md-note-cell">Nothing here right now.</td></tr>
           )}
-          {rows.map(it => (
-            <React.Fragment key={it.id}>
-              {editId === it.id ? (
-                <tr><td colSpan={ncols}>
-                  <BriefingEditForm sectionKey={sectionKey} row={it} busy={busy}
-                    onCancel={() => setEditId(null)}
-                    onSave={async (fields) => { const r = await patch(it, fields); if (r.ok) setEditId(null); }} />
-                </td></tr>
-              ) : (
+          {rows.map(it => {
+            if (editId === it.id) {
+              return <BriefingEditRow key={it.id} sectionKey={sectionKey} row={it} ncols={ncols} busy={busy}
+                onCancel={() => setEditId(null)}
+                onSave={async (fields) => { const r = await patch(it, fields); if (r.ok) setEditId(null); }} />;
+            }
+            const doneNote = it.done ? mdDoneNote(it.meta) : '';
+            return (
+              <React.Fragment key={it.id}>
                 <tr>
-                  <td><input type="checkbox" className="md-chk" checked={!!it.done} disabled={busy}
-                        aria-label={it.done ? 'Mark not done' : 'Mark done'}
-                        onChange={() => patch(it, { done: it.done ? 0 : 1 })} /></td>
                   {def.cols.map(c => (
                     <td key={c.key} className={c.cls || ''}>
                       {c.pill
                         ? (it.statusLabel ? <MdPill cls={it.statusClass}>{it.statusLabel}</MdPill> : '-')
                         : (() => {
                             const val = c.fmt ? mdDate(it[c.key]) : (it[c.key] || (c.main ? '' : '-'));
-                            return c.main ? <span className={it.done ? 'md-done-text' : ''}>{val}</span> : val;
+                            return c.main
+                              ? <span className={it.done ? 'md-done-text' : ''}>{val}{it.done && it.doneAt && <span className="md-donestamp">done {mdDate(it.doneAt)}</span>}</span>
+                              : val;
                           })()}
                     </td>
                   ))}
                   <td className="md-actcell"><div className="md-rowact">
-                    <button type="button" className="md-rowbtn" disabled={busy} onClick={() => { setAdding(false); setEditId(it.id); }}>Edit</button>
+                    {it.done
+                      ? <button type="button" className="md-rowbtn" disabled={busy} onClick={() => patch(it, { done: 0 })}>Restore</button>
+                      : <button type="button" className="md-rowbtn md-rowbtn-primary" disabled={busy} onClick={() => startComplete(it)}>Complete</button>}
+                    <button type="button" className="md-rowbtn" disabled={busy} onClick={() => { setCompletingId(null); setAdding(false); setEditId(it.id); }}>Edit</button>
                     <button type="button" className="md-rowbtn md-rowbtn-danger" disabled={busy}
                       onClick={() => { if (window.confirm('Delete this item? (soft-delete, recoverable in the data)')) onWrite('DELETE', '/api/briefing/items/' + it.id, { expected_version: it.version }); }}>Delete</button>
                   </div></td>
                 </tr>
-              )}
-              {it.context && editId !== it.id && (
-                <tr><td colSpan={ncols}><MdCtx summary={def.why}>{it.context}</MdCtx></td></tr>
-              )}
-            </React.Fragment>
-          ))}
+                {completingId === it.id && (
+                  <tr className="md-editing-extra"><td colSpan={ncols}>
+                    <div className="md-complete-note">
+                      <label><span>Completion note (optional)</span>
+                        <input type="text" value={note} disabled={busy} placeholder="optional - what got done / the outcome"
+                          onChange={e => setNote(e.target.value)} /></label>
+                      <div className="md-editactions">
+                        <button type="button" className="md-save" disabled={busy}
+                          onClick={async () => { const r = await patch(it, { done: 1, meta: JSON.stringify({ done_note: note || '' }) }); if (r.ok) { setCompletingId(null); setNote(''); } }}>Mark complete</button>
+                        <button type="button" className="md-cancel" disabled={busy} onClick={() => { setCompletingId(null); setNote(''); }}>Cancel</button>
+                      </div>
+                    </div>
+                  </td></tr>
+                )}
+                {(it.context || doneNote) && completingId !== it.id && (
+                  <tr><td colSpan={ncols}>
+                    {it.context && <MdCtx summary={def.why}>{it.context}</MdCtx>}
+                    {doneNote && <div className="md-donenote">✓ Completed note: {doneNote}</div>}
+                  </td></tr>
+                )}
+              </React.Fragment>
+            );
+          })}
           {adding && (
-            <tr><td colSpan={ncols}>
-              <BriefingEditForm sectionKey={sectionKey} row={null} busy={busy}
-                onCancel={() => setAdding(false)}
-                onSave={async (fields) => { const r = await onWrite('POST', '/api/briefing/items', { section: sectionKey, ...fields }); if (r.ok) setAdding(false); }} />
-            </td></tr>
+            <BriefingEditRow sectionKey={sectionKey} row={null} ncols={ncols} busy={busy}
+              onCancel={() => setAdding(false)}
+              onSave={async (fields) => { const r = await onWrite('POST', '/api/briefing/items', { section: sectionKey, ...fields }); if (r.ok) setAdding(false); }} />
           )}
         </tbody>
       </table>
-      {!adding && <button type="button" className="md-addbtn" disabled={busy} onClick={() => { setEditId(null); setAdding(true); }}>+ Add item</button>}
+      {!adding && <button type="button" className="md-addbtn" disabled={busy} onClick={() => { setEditId(null); setCompletingId(null); setAdding(true); }}>+ Add item</button>}
     </MdSec>
   );
 }
@@ -1300,9 +1408,8 @@ function MyDayView({ onSelect }) {
   const needs = b.needsAttention || [];
   // Proposals store lands in PB2c; until then fall back to sample cards so the
   // read-only Approve/Deny layout is reviewable. Real proposals win when present.
-  const liveProposals = Array.isArray(b.proposals) ? b.proposals : [];
-  const proposals = liveProposals.length ? liveProposals : SAMPLE_PROPOSALS;
-  const proposalsAreSample = liveProposals.length === 0;
+  // PB2c: the live pending-proposal queue from the API (owner's own only).
+  const proposals = Array.isArray(b.proposals) ? b.proposals : [];
 
   const isEmpty = !b.generated && projs.length === 0 &&
     [carry, pending, waiting, situations, completed].every(a => a.length === 0);
@@ -1355,46 +1462,20 @@ function MyDayView({ onSelect }) {
         </div>
       )}
 
-      {/* Needs Attention - compact warn alert strip pinned at the top (age pill + bold project). */}
-      {needs.length > 0 && (
-        <MdSec warn count={needs.length}
-          title={<span><span className="md-attn-ico" aria-hidden="true">⚠</span>Needs Attention</span>}>
-          <div role="note" aria-label="Items that need your attention">
-            {needs.map((nA, i) => (
-              <p className="md-needs-line" key={i}>
-                {nA.age && <MdPill cls={nA.statusClass}>{nA.age}</MdPill>}{nA.age ? ' ' : ''}
-                {nA.project && <b className="md-proj">{nA.project}</b>}{nA.project ? ' - ' : ''}
-                {nA.text}
-                {!nA.age && nA.context && <span className="md-needs-ctx"> · {nA.context}</span>}
-              </p>
-            ))}
-          </div>
-        </MdSec>
-      )}
+      {/* PB2b.1: "Your Tasks" (the carryover section) is the TOP section - it now holds
+          the former Needs Attention / stale-aging items as ordinary editable tasks.
+          The separate read-only Needs Attention strip is gone. */}
+      <BriefingTable sectionKey="carryover" rows={carry} onWrite={write} busy={busy} />
 
-      {/* Pending Your Review - AI proposals as approve/deny cards, RENDERED READ-ONLY (live in PB2c). */}
-      <MdSec title="Pending Your Review" stub="AI proposals - read-only">
-        {proposalsAreSample && (
-          <p className="md-prop-note">Preview - sample proposals. The live Approve / Deny queue arrives in PB2c.</p>
-        )}
+      {/* Pending Your Review - LIVE AI proposal queue (PB2c): Approve (optional note) /
+          Deny (required reason). Cards leave the queue on decision. */}
+      <MdSec title="Pending Your Review" count={proposals.length} stub="AI proposals">
         {proposals.length === 0
           ? <p className="md-empty-note">No proposals to review right now.</p>
-          : proposals.map((p, i) => (
-              <div className="md-prop" key={p.id || i}>
-                <div className="md-prop-text">{p.text}</div>
-                <div className="md-prop-meta">
-                  {[p.source && ('from ' + p.source), p.targetSection && ('→ ' + p.targetSection)].filter(Boolean).join(' · ')}
-                </div>
-                <div className="md-prop-act" aria-hidden="true">
-                  <button type="button" className="md-mini" disabled>Approve</button>
-                  <button type="button" className="md-mini" disabled>Deny</button>
-                </div>
-              </div>
-            ))}
+          : proposals.map(p => <ProposalCard key={p.id} p={p} onWrite={write} busy={busy} />)}
       </MdSec>
 
-      {/* Editable sections (PB2b): complete-toggle, inline edit, reclassify, add, soft-delete. */}
-      <BriefingTable sectionKey="carryover" rows={carry} onWrite={write} busy={busy} />
+      {/* Other editable sections: inline edit, Complete (optional note), Delete. */}
       <BriefingTable sectionKey="customer_situation" rows={situations} onWrite={write} busy={busy} />
       <BriefingTable sectionKey="waiting_on" rows={waiting} onWrite={write} busy={busy} />
       <BriefingTable sectionKey="pending" rows={pending} onWrite={write} busy={busy} />
