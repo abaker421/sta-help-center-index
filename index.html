@@ -174,7 +174,7 @@ textarea.ef-ctl{min-height:44px;resize:vertical;line-height:1.4}
 .hdr-myday-btn:hover{border-color:#6bc04b !important;color:#fff !important}
 .hdr-myday-btn.active{background:#6bc04b !important;border-color:#6bc04b !important;color:#10261a !important}
 .myday-view{flex:1;overflow-y:auto;padding:28px 48px 80px;scrollbar-width:thin;scrollbar-color:#bbb #fff;background:#e7ecf2}
-.md-wrap{max-width:840px;margin:0 auto}
+.md-wrap{max-width:1040px;margin:0 auto}
 .md-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .md-readonly{display:inline-block;font-size:7.5pt;font-weight:700;background:#e6eef6;color:#0a4f7a;border-radius:999px;padding:2px 10px;margin-left:8px;vertical-align:middle}
 .md-kpis{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 20px}
@@ -207,6 +207,74 @@ textarea.ef-ctl{min-height:44px;resize:vertical;line-height:1.4}
 .md-viewall:focus-visible{outline:3px solid #6bc04b;outline-offset:2px}
 .md-viewall .md-arrow{font-size:12pt;line-height:1}
 .md-muted{font-size:9pt;color:#4b5563;font-style:italic;margin-bottom:10px}
+/* ---- PB2a: B+C combo (hero, sections, tables, pills, expandable rows, proposal cards) ---- */
+.md-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;background:linear-gradient(100deg,#006098,#0a7bb8);color:#fff;border-radius:12px;padding:16px 20px;margin-bottom:16px}
+.md-hero h1{font-size:17pt;margin:0;color:#fff;font-weight:700;line-height:1.15}
+.md-hero-date{opacity:.93;font-size:9pt;margin-top:3px}
+.md-hero-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.md-hero .md-readonly{background:#fff;color:#006098}
+.md-sec{background:#fff;border:1px solid #d8e0e8;border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.md-sec-hd{font-size:11.5pt;margin:0 0 10px;color:#006098;display:flex;align-items:center;gap:8px;font-weight:700;flex-wrap:wrap}
+.md-count{font-size:8pt;font-weight:600;color:#5a6b7b;background:#eef3f7;border-radius:10px;padding:1px 8px}
+.md-stub{font-size:7.5pt;font-weight:600;color:#5a6b7b;background:#eef3f7;border-radius:6px;padding:2px 7px}
+.md-tbl{width:100%;border-collapse:collapse;font-size:10pt}
+.md-tbl th{text-align:left;font-size:7.5pt;text-transform:uppercase;letter-spacing:.04em;color:#5a6b7b;border-bottom:1.5px solid #d8e0e8;padding:6px 8px;font-weight:700}
+.md-tbl td{padding:8px;border-bottom:1px solid #e7edf3;vertical-align:top;color:#1f2933;line-height:1.45}
+.md-tbl tr:last-child td{border-bottom:none}
+.md-proj{font-weight:600;color:#006098}
+.md-dt{color:#5a6b7b;white-space:nowrap;font-variant-numeric:tabular-nums}
+.md-cust{font-weight:700;color:#1f2933}
+.md-note-cell{color:#5a6b7b;font-size:9pt}
+.md-pill{display:inline-flex;align-items:center;gap:5px;font-size:8pt;font-weight:700;padding:2px 9px;border-radius:10px;white-space:nowrap}
+.md-pill::before{content:"";width:7px;height:7px;border-radius:50%}
+.md-pill-risk{background:#fef3f2;color:#b42318} .md-pill-risk::before{background:#b42318}
+.md-pill-watch{background:#fffbeb;color:#8a6d00} .md-pill-watch::before{background:#8a6d00}
+.md-pill-ok{background:#ecfdf3;color:#067647} .md-pill-ok::before{background:#6bc04b}
+.md-needs-sec{border-left:4px solid #b54708;background:#fff6ed}
+.md-needs-sec .md-sec-hd{color:#b54708}
+.md-needs-line{margin:0 0 7px;font-size:10pt;line-height:1.5;color:#1f2933}
+.md-needs-line:last-child{margin-bottom:0}
+.md-needs-line .md-proj{color:#92400e}
+.md-needs-ctx{color:#5a6b7b}
+.md-ctx{margin:2px 0}
+.md-ctx summary{cursor:pointer;color:#5a6b7b;font-size:9pt;min-height:24px;display:inline-flex;align-items:center;list-style-position:inside}
+.md-ctx[open] summary{color:#006098}
+.md-ctx p{margin:6px 0 2px;color:#5a6b7b;font-size:9pt;line-height:1.55}
+.md-prop{border:1px solid #d8e0e8;border-radius:9px;padding:10px 12px;margin-bottom:8px}
+.md-prop:last-child{margin-bottom:0}
+.md-prop-text{font-weight:700;color:#1f2933;font-size:10pt;line-height:1.4}
+.md-prop-meta{color:#5a6b7b;font-size:8.5pt;margin-top:4px}
+.md-prop-act{display:flex;gap:6px;margin-top:9px}
+.md-mini{font-family:'Roboto',Arial,sans-serif;font-size:8.5pt;font-weight:600;border-radius:7px;padding:5px 12px;min-height:24px;border:1px solid #d8e0e8;background:#f4f7fa;color:#7c8a99;cursor:not-allowed}
+.md-prop-note{font-size:8.5pt;color:#5a6b7b;font-style:italic;margin:0 0 10px}
+.md-empty-note{color:#5a6b7b;font-size:9.5pt;font-style:italic;margin:0}
+/* ---- PB2b: in-tab editing (complete-toggle, inline edit, reclassify, add, delete, 409) ---- */
+.md-chk{width:16px;height:16px;accent-color:#6bc04b;cursor:pointer;margin-top:2px}
+.md-chk:disabled{cursor:default}
+.md-done-text{text-decoration:line-through;color:#7c8a99}
+.md-rowact{display:flex;gap:6px;white-space:nowrap}
+.md-rowbtn{font-family:'Roboto',Arial,sans-serif;font-size:8.5pt;font-weight:600;border-radius:7px;padding:5px 10px;min-height:24px;border:1px solid #cdd6e3;background:#fff;color:#006098;cursor:pointer}
+.md-rowbtn:hover{background:#f0f6fb}
+.md-rowbtn-danger{color:#b42318;border-color:#e7c3bf}
+.md-rowbtn-danger:hover{background:#fef3f2}
+.md-addbtn{display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-family:'Roboto',Arial,sans-serif;font-size:8.5pt;font-weight:600;border-radius:8px;padding:6px 12px;min-height:24px;border:1px dashed #9bb4c9;background:#f7fafc;color:#006098;cursor:pointer}
+.md-addbtn:hover{background:#eef6fc;border-color:#006098}
+.md-editform{display:flex;flex-direction:column;gap:8px;background:#f7fafc;border:1px solid #d8e0e8;border-radius:8px;padding:12px}
+.md-editrow{display:flex;flex-wrap:wrap;gap:10px}
+.md-editfield{display:flex;flex-direction:column;gap:3px;flex:1 1 160px}
+.md-editfield.wide{flex-basis:100%}
+.md-editfield label{font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#5a6b7b}
+.md-editfield input,.md-editfield select,.md-editfield textarea{font-family:'Roboto',Arial,sans-serif;font-size:9.5pt;color:#1f2933;border:1px solid #cdd6e3;border-radius:6px;padding:6px 8px;background:#fff}
+.md-editfield textarea{min-height:54px;resize:vertical;line-height:1.45}
+.md-editfield input:focus,.md-editfield select:focus,.md-editfield textarea:focus{outline:2px solid #006098;outline-offset:0;border-color:#006098}
+.md-editactions{display:flex;gap:8px;align-items:center}
+.md-save{font-family:'Roboto',Arial,sans-serif;font-size:9pt;font-weight:600;border-radius:8px;padding:7px 16px;min-height:24px;border:1.5px solid #006098;background:#006098;color:#fff;cursor:pointer}
+.md-save:disabled{opacity:.6;cursor:default}
+.md-cancel{font-family:'Roboto',Arial,sans-serif;font-size:9pt;font-weight:600;border-radius:8px;padding:7px 16px;min-height:24px;border:1.5px solid #cdd6e3;background:#fff;color:#5a6b7b;cursor:pointer}
+.md-conflict{border:1.5px solid #d99a00;background:#fff8e6;border-radius:10px;padding:12px 14px;margin-bottom:14px;color:#5a4a10;font-size:9.5pt}
+.md-conflict b{color:#7a4a00}
+.md-conflict-act{margin-top:8px;display:flex;gap:8px}
+.md-tbl td.md-actcell{width:1%;white-space:nowrap}
 .md-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 40px;text-align:center}
 .md-empty-icon{font-size:40px;margin-bottom:14px}
 .md-empty-title{font-size:12pt;font-weight:700;color:#445063;margin-bottom:6px}
@@ -943,33 +1011,240 @@ function ProjectsView({ data }) {
 // are disabled/static, there is no Notes box, and completed items render struck-through
 // (those write paths are PB2). A user with no briefing gets a friendly empty-state.
 
-// One section block with the shared Projects-tab group header.
-function MdSection({ title, note, children }) {
+// PB2a B+C combo helpers ------------------------------------------------------
+
+// Section shell: white card, brand-blue Title-Case heading, optional count badge,
+// optional "stub" badge, optional warn styling (the Needs Attention strip).
+function MdSec({ title, count, stub, warn, children }) {
   return (
-    <div className="md-section">
-      <div className="proj-group-hdr">{title}{note && <span className="proj-group-note">{note}</span>}</div>
+    <section className={"md-sec" + (warn ? " md-needs-sec" : "")}>
+      <h2 className="md-sec-hd">
+        {title}
+        {typeof count === 'number' && <span className="md-count">{count}</span>}
+        {stub && <span className="md-stub">{stub}</span>}
+      </h2>
       {children}
+    </section>
+  );
+}
+
+// Status pill - the colour ALWAYS rides with the label text (never colour-alone, WCAG 1.4.1).
+function MdPill({ cls, children }) {
+  const c = cls === 'risk' ? 'md-pill-risk' : cls === 'ok' ? 'md-pill-ok' : 'md-pill-watch';
+  return <span className={"md-pill " + c}>{children}</span>;
+}
+
+// Expandable "why" row - long context behind native details/summary so tables stay scannable.
+function MdCtx({ summary, children }) {
+  if (!children) return null;
+  return <details className="md-ctx"><summary>{summary}</summary><p>{children}</p></details>;
+}
+
+// "2026-06-05" / "~2026-06-04" -> "6/05" / "~6/04" (drop the year for scan density).
+function mdDate(d) {
+  if (!d) return '';
+  const m = String(d).match(/^(~?)(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? (m[1] + String(Number(m[3])) + '/' + m[4]) : String(d);
+}
+
+// Long hero date, formatted from the ISO parts in UTC so there is no timezone day-shift.
+function mdHeroDate(iso) {
+  const m = iso && String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return 'Your daily briefing';
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const dt = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+  return days[dt.getUTCDay()] + ', ' + months[Number(m[2]) - 1] + ' ' + Number(m[3]) + ', ' + m[1];
+}
+
+function mdGreeting() {
+  const h = new Date().getHours();
+  return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+}
+
+// Sample proposals so the READ-ONLY Pending Your Review card layout is reviewable now.
+// The live proposal store + Approve/Deny writes land in PB2c; real proposals
+// (b.proposals from the API) take precedence over these the moment they exist.
+const SAMPLE_PROPOSALS = [
+  { id: 'sample-1', text: 'Log "comp-time on clocks" as a feature request', source: '6/11 Weekly Huddle', targetSection: 'Waiting On Others' },
+  { id: 'sample-2', text: 'Add Customer Situation: Canyons RFP (products already purchased)', source: '6/10 Daily Connect', targetSection: 'Customer Situations' },
+  { id: 'sample-3', text: 'Mark complete: Watertown HS + Green Hill HS ID resolved', source: '6/11 Wilson County ID', targetSection: 'Completed' },
+];
+
+// PB2b in-tab editing ---------------------------------------------------------
+// Column + edit-field spec per EDITABLE section (mirrors the server BRIEFING_EDITABLE_
+// SECTIONS). `pill` renders the status pill cell; `fmt` shortens an ISO date; `main`
+// is the cell that strikes through when done.
+const BR_SECTION_DEFS = {
+  carryover: { title: 'Carryover',
+    cols: [{ key:'itemDate', header:'Date', cls:'md-dt', fmt:true }, { key:'project', header:'Project', cls:'md-proj' }, { key:'text', header:'Item', main:true }],
+    why: 'Why carried', edit: ['text','project','item_date','context'] },
+  customer_situation: { title: 'Customer Situations',
+    cols: [{ key:'text', header:'Customer', cls:'md-cust', main:true }, { key:'statusLabel', header:'Status', pill:true }, { key:'owner', header:'Owner' }],
+    why: 'Situation', edit: ['text','owner','status','context'] },
+  waiting_on: { title: 'Waiting On Others',
+    cols: [{ key:'text', header:'Item', main:true }, { key:'owner', header:'Sent to' }, { key:'itemDate', header:'Date', cls:'md-dt', fmt:true }, { key:'project', header:'Project', cls:'md-proj' }],
+    why: 'Context', edit: ['text','owner','item_date','project','context'] },
+  pending: { title: 'Pending Your Action',
+    cols: [{ key:'text', header:'Item', main:true }, { key:'owner', header:'From' }, { key:'itemDate', header:'Date', cls:'md-dt', fmt:true }],
+    why: 'Context', edit: ['text','owner','item_date','context'] },
+};
+const BR_RECLASSIFY = [
+  { v:'carryover', label:'Carryover' }, { v:'pending', label:'Pending Your Action' },
+  { v:'waiting_on', label:'Waiting On Others' }, { v:'customer_situation', label:'Customer Situations' },
+];
+const BR_STATUS_OPTS = [
+  { v:'', label:'(none)' }, { v:'risk', label:'At risk' }, { v:'watch', label:'Watch' }, { v:'ok', label:'Resolved' },
+];
+const BR_STATUS_LABEL = { risk:'At risk', watch:'Watch', ok:'Resolved' };
+
+function brEditLabel(def, key) {
+  if (key === 'text') return (def.cols.find(c => c.key === 'text') || {}).header || 'Text';
+  if (key === 'owner') return (def.cols.find(c => c.key === 'owner') || {}).header || 'Owner';
+  if (key === 'item_date') return 'Date (YYYY-MM-DD)';
+  if (key === 'project') return 'Project';
+  if (key === 'context') return def.why;
+  if (key === 'status') return 'Status';
+  return key;
+}
+
+// Inline edit / add form for one briefing row. row=null => add mode (no version,
+// no reclassify select). Calls onSave(fields) with the whitelisted field set.
+function BriefingEditForm({ sectionKey, row, onSave, onCancel, busy }) {
+  const def = BR_SECTION_DEFS[sectionKey];
+  const seed = {};
+  for (const f of def.edit) {
+    if (f === 'status') seed.status = (row && row.statusClass) || '';
+    else if (f === 'item_date') seed.item_date = (row && row.itemDate) || '';
+    else seed[f] = (row && row[f]) || '';
+  }
+  const [form, setForm] = useState(seed);
+  const [section, setSection] = useState(sectionKey);
+  const set = (k, v) => setForm(s => ({ ...s, [k]: v }));
+
+  const submit = () => {
+    const fields = {};
+    for (const f of def.edit) {
+      if (f === 'status') { fields.status_class = form.status || null; fields.status_label = form.status ? BR_STATUS_LABEL[form.status] : null; }
+      else fields[f] = (form[f] === '' ? null : form[f]);
+    }
+    if ((form.text || '').trim() === '') return; // text is required
+    fields.text = form.text.trim();
+    if (row && section !== sectionKey) fields.section = section; // reclassify (edit only)
+    onSave(fields);
+  };
+
+  return (
+    <div className="md-editform">
+      <div className="md-editrow">
+        {def.edit.map(f => (
+          <div className={"md-editfield" + (f === 'text' || f === 'context' ? ' wide' : '')} key={f}>
+            <label>{brEditLabel(def, f)}</label>
+            {f === 'context'
+              ? <textarea value={form.context || ''} disabled={busy} onChange={e => set('context', e.target.value)} />
+              : f === 'status'
+                ? <select value={form.status || ''} disabled={busy} onChange={e => set('status', e.target.value)}>
+                    {BR_STATUS_OPTS.map(o => <option key={o.v} value={o.v}>{o.label}</option>)}
+                  </select>
+                : <input type="text" value={form[f] || ''} disabled={busy}
+                    placeholder={f === 'item_date' ? '2026-06-14' : ''}
+                    onChange={e => set(f, e.target.value)} />}
+          </div>
+        ))}
+        {row && (
+          <div className="md-editfield">
+            <label>Section (reclassify)</label>
+            <select value={section} disabled={busy} onChange={e => setSection(e.target.value)}>
+              {BR_RECLASSIFY.map(o => <option key={o.v} value={o.v}>{o.label}</option>)}
+            </select>
+          </div>
+        )}
+      </div>
+      <div className="md-editactions">
+        <button type="button" className="md-save" disabled={busy} onClick={submit}>{row ? 'Save' : 'Add'}</button>
+        <button type="button" className="md-cancel" disabled={busy} onClick={onCancel}>Cancel</button>
+      </div>
     </div>
   );
 }
 
-// A static (disabled) checkable line: checkbox + text + optional meta. Struck through
-// with a green "done [date]" stamp when complete (history stays visible, per the artifact).
-function MdCheckLine({ text, meta, done, doneAt }) {
+// One editable section table: complete-toggle, inline edit, reclassify, soft-delete,
+// add-item. All writes go through onWrite (which re-fetches on success / surfaces 409).
+function BriefingTable({ sectionKey, rows, onWrite, busy }) {
+  const def = BR_SECTION_DEFS[sectionKey];
+  const [editId, setEditId] = useState(null);
+  const [adding, setAdding] = useState(false);
+  const ncols = def.cols.length + 2; // leading checkbox + trailing actions
+
+  const patch = (it, body) => onWrite('PATCH', '/api/briefing/items/' + it.id, { expected_version: it.version, ...body });
+
   return (
-    <div className={"md-check" + (done ? " md-done" : "")}>
-      <input type="checkbox" disabled checked={!!done} readOnly aria-label={done ? "Completed" : "Open"} />
-      <span className="md-check-body">
-        <span className="md-check-text">{text}{done && doneAt && <span className="md-donestamp">done {doneAt}</span>}</span>
-        {meta && <span className="md-meta">{meta}</span>}
-      </span>
-    </div>
+    <MdSec title={def.title} count={rows.length}>
+      <table className="md-tbl">
+        <thead><tr>
+          <th aria-label="Done"></th>
+          {def.cols.map(c => <th key={c.key}>{c.header}</th>)}
+          <th aria-label="Actions"></th>
+        </tr></thead>
+        <tbody>
+          {rows.length === 0 && !adding && (
+            <tr><td colSpan={ncols} className="md-note-cell">Nothing here right now.</td></tr>
+          )}
+          {rows.map(it => (
+            <React.Fragment key={it.id}>
+              {editId === it.id ? (
+                <tr><td colSpan={ncols}>
+                  <BriefingEditForm sectionKey={sectionKey} row={it} busy={busy}
+                    onCancel={() => setEditId(null)}
+                    onSave={async (fields) => { const r = await patch(it, fields); if (r.ok) setEditId(null); }} />
+                </td></tr>
+              ) : (
+                <tr>
+                  <td><input type="checkbox" className="md-chk" checked={!!it.done} disabled={busy}
+                        aria-label={it.done ? 'Mark not done' : 'Mark done'}
+                        onChange={() => patch(it, { done: it.done ? 0 : 1 })} /></td>
+                  {def.cols.map(c => (
+                    <td key={c.key} className={c.cls || ''}>
+                      {c.pill
+                        ? (it.statusLabel ? <MdPill cls={it.statusClass}>{it.statusLabel}</MdPill> : '-')
+                        : (() => {
+                            const val = c.fmt ? mdDate(it[c.key]) : (it[c.key] || (c.main ? '' : '-'));
+                            return c.main ? <span className={it.done ? 'md-done-text' : ''}>{val}</span> : val;
+                          })()}
+                    </td>
+                  ))}
+                  <td className="md-actcell"><div className="md-rowact">
+                    <button type="button" className="md-rowbtn" disabled={busy} onClick={() => { setAdding(false); setEditId(it.id); }}>Edit</button>
+                    <button type="button" className="md-rowbtn md-rowbtn-danger" disabled={busy}
+                      onClick={() => { if (window.confirm('Delete this item? (soft-delete, recoverable in the data)')) onWrite('DELETE', '/api/briefing/items/' + it.id, { expected_version: it.version }); }}>Delete</button>
+                  </div></td>
+                </tr>
+              )}
+              {it.context && editId !== it.id && (
+                <tr><td colSpan={ncols}><MdCtx summary={def.why}>{it.context}</MdCtx></td></tr>
+              )}
+            </React.Fragment>
+          ))}
+          {adding && (
+            <tr><td colSpan={ncols}>
+              <BriefingEditForm sectionKey={sectionKey} row={null} busy={busy}
+                onCancel={() => setAdding(false)}
+                onSave={async (fields) => { const r = await onWrite('POST', '/api/briefing/items', { section: sectionKey, ...fields }); if (r.ok) setAdding(false); }} />
+            </td></tr>
+          )}
+        </tbody>
+      </table>
+      {!adding && <button type="button" className="md-addbtn" disabled={busy} onClick={() => { setEditId(null); setAdding(true); }}>+ Add item</button>}
+    </MdSec>
   );
 }
 
 function MyDayView({ onSelect }) {
   const [data, setData] = useState(null);
   const [status, setStatus] = useState('loading'); // loading | idle | error
+  const [busy, setBusy] = useState(false);         // a write is in flight
+  const [conflict, setConflict] = useState(null);  // 409 payload {current_version, current}
+  const [writeErr, setWriteErr] = useState(null);  // non-409 write failure message
 
   const load = useCallback(() => {
     setStatus('loading');
@@ -979,6 +1254,19 @@ function MyDayView({ onSelect }) {
       .catch(() => { setStatus('error'); });
   }, []);
   useEffect(() => { load(); }, [load]);
+
+  // Every briefing write goes through here: send expected_version, then on 409 surface
+  // a reconcile banner (NEVER auto-overwrite), on success clear banners + re-fetch, on
+  // any other failure surface a dismissible error. Returns {ok,status,data}.
+  const write = useCallback(async (method, path, body) => {
+    setBusy(true);
+    const r = await apiWrite(method, path, body);
+    setBusy(false);
+    if (r.status === 409) { setConflict(r.data || {}); return r; }
+    if (r.ok) { setConflict(null); setWriteErr(null); await load(); return r; }
+    setWriteErr((r.data && r.data.error) || ('write failed (HTTP ' + r.status + ')'));
+    return r;
+  }, [load]);
 
   const RefreshBtn = (
     <button type="button" onClick={load} disabled={status === 'loading'}
@@ -1009,8 +1297,12 @@ function MyDayView({ onSelect }) {
   const situations = sec.customerSituations || [];
   const completed = sec.completed || [];
   const projs = b.openProjects || [];
-  const meetings = b.todaysMeetings || [];
   const needs = b.needsAttention || [];
+  // Proposals store lands in PB2c; until then fall back to sample cards so the
+  // read-only Approve/Deny layout is reviewable. Real proposals win when present.
+  const liveProposals = Array.isArray(b.proposals) ? b.proposals : [];
+  const proposals = liveProposals.length ? liveProposals : SAMPLE_PROPOSALS;
+  const proposalsAreSample = liveProposals.length === 0;
 
   const isEmpty = !b.generated && projs.length === 0 &&
     [carry, pending, waiting, situations, completed].every(a => a.length === 0);
@@ -1030,122 +1322,112 @@ function MyDayView({ onSelect }) {
   return (
     <div className="myday-view">
       <div className="md-wrap">
-      <div className="md-head">
+
+      <div className="md-hero">
         <div>
-          <h1 className="pv-h1">My Day<span className="md-readonly">Read-only</span></h1>
-          <div className="pv-sub">
-            Your daily briefing{b.generated ? ' · generated ' + b.generated : ''}
-            {b.owner ? ' · ' + b.owner : ''}
-            {status === 'loading' && <span> · refreshing…</span>}
-            {status === 'error' && <span> · showing last loaded copy</span>}
+          <h1>{mdGreeting()}</h1>
+          <div className="md-hero-date">
+            {mdHeroDate(b.generated)}{b.owner ? ' · ' + b.owner : ''}
+            {status === 'loading' && ' · refreshing…'}
+            {status === 'error' && ' · showing last loaded copy'}
           </div>
         </div>
-        {RefreshBtn}
+        <div className="md-hero-right">
+          {RefreshBtn}
+        </div>
       </div>
 
-      {/* At-a-glance KPI strip (counts only - no editorialising). */}
-      <div className="md-kpis">
-        <div className="md-kpi"><b>{meetings.length}</b><span>Meetings</span></div>
-        <div className="md-kpi"><b>{projs.length}</b><span>Open projects</span></div>
-        <div className="md-kpi"><b>{pending.length}</b><span>Pending you</span></div>
-        <div className="md-kpi"><b>{carry.length}</b><span>Carryover</span></div>
-      </div>
-
-      {needs.length > 0 && (
-        <MdSection title={<><span className="md-attn-ico" aria-hidden="true">⚠</span>Needs Attention</>}>
-          <div className="md-needs" role="note" aria-label="Items that need your attention">
-            <ul>
-              {needs.map((nA, i) => (
-                <li key={i}>{nA.text}{nA.meta && <span className="md-meta">{nA.meta}</span>}</li>
-              ))}
-            </ul>
+      {conflict && (
+        <div className="md-conflict" role="alert">
+          <b>This item changed since you loaded it.</b> Your edit was not applied, so a newer version is not overwritten. Reload the latest, then re-apply your change.
+          <div className="md-conflict-act">
+            <button type="button" className="md-save" onClick={() => { setConflict(null); load(); }}>Reload latest</button>
+            <button type="button" className="md-cancel" onClick={() => setConflict(null)}>Dismiss</button>
           </div>
-        </MdSection>
+        </div>
+      )}
+      {writeErr && (
+        <div className="md-conflict" role="alert" style={{ borderColor: '#e7c3bf', background: '#fef3f2', color: '#7a1d12' }}>
+          <b>Could not save.</b> {writeErr}
+          <div className="md-conflict-act">
+            <button type="button" className="md-cancel" onClick={() => setWriteErr(null)}>Dismiss</button>
+          </div>
+        </div>
       )}
 
-      <MdSection title="Today's Meetings">
-        {meetings.length === 0
-          ? <div className="md-muted">No meetings on today's snapshot.</div>
-          : meetings.map((m, i) => (
-              <div className="md-card" key={i}>
-                <div className="md-check-body">
-                  <span className="md-check-text">{m.title || m.summary || 'Meeting'}</span>
-                  <span className="md-meta">
-                    {[m.time || [m.start, m.end].filter(Boolean).join('-'), m.attendees, m.location].filter(Boolean).join(' · ')}
-                  </span>
+      {/* Needs Attention - compact warn alert strip pinned at the top (age pill + bold project). */}
+      {needs.length > 0 && (
+        <MdSec warn count={needs.length}
+          title={<span><span className="md-attn-ico" aria-hidden="true">⚠</span>Needs Attention</span>}>
+          <div role="note" aria-label="Items that need your attention">
+            {needs.map((nA, i) => (
+              <p className="md-needs-line" key={i}>
+                {nA.age && <MdPill cls={nA.statusClass}>{nA.age}</MdPill>}{nA.age ? ' ' : ''}
+                {nA.project && <b className="md-proj">{nA.project}</b>}{nA.project ? ' - ' : ''}
+                {nA.text}
+                {!nA.age && nA.context && <span className="md-needs-ctx"> · {nA.context}</span>}
+              </p>
+            ))}
+          </div>
+        </MdSec>
+      )}
+
+      {/* Pending Your Review - AI proposals as approve/deny cards, RENDERED READ-ONLY (live in PB2c). */}
+      <MdSec title="Pending Your Review" stub="AI proposals - read-only">
+        {proposalsAreSample && (
+          <p className="md-prop-note">Preview - sample proposals. The live Approve / Deny queue arrives in PB2c.</p>
+        )}
+        {proposals.length === 0
+          ? <p className="md-empty-note">No proposals to review right now.</p>
+          : proposals.map((p, i) => (
+              <div className="md-prop" key={p.id || i}>
+                <div className="md-prop-text">{p.text}</div>
+                <div className="md-prop-meta">
+                  {[p.source && ('from ' + p.source), p.targetSection && ('→ ' + p.targetSection)].filter(Boolean).join(' · ')}
+                </div>
+                <div className="md-prop-act" aria-hidden="true">
+                  <button type="button" className="md-mini" disabled>Approve</button>
+                  <button type="button" className="md-mini" disabled>Deny</button>
                 </div>
               </div>
             ))}
-      </MdSection>
+      </MdSec>
 
-      <MdSection title="Carryover from Yesterday">
-        {carry.length === 0
-          ? <div className="md-muted">Nothing carried over.</div>
-          : carry.map(it => (
-              <div className="md-card" key={it.id}>
-                <MdCheckLine text={it.text} done={it.done} />
-                {it.meta && (
-                  <details className="proj-detail"><summary>What this is</summary>
-                    <div className="pd-row">{it.meta}</div>
-                  </details>
-                )}
-              </div>
-            ))}
-      </MdSection>
+      {/* Editable sections (PB2b): complete-toggle, inline edit, reclassify, add, soft-delete. */}
+      <BriefingTable sectionKey="carryover" rows={carry} onWrite={write} busy={busy} />
+      <BriefingTable sectionKey="customer_situation" rows={situations} onWrite={write} busy={busy} />
+      <BriefingTable sectionKey="waiting_on" rows={waiting} onWrite={write} busy={busy} />
+      <BriefingTable sectionKey="pending" rows={pending} onWrite={write} busy={busy} />
 
-      <MdSection title="Pending Your Review">
-        {pending.length === 0
-          ? <div className="md-muted">Nothing pending your review.</div>
-          : pending.map(it => (
-              <div className="md-card md-title-card" key={it.id}>
-                <div className="md-title-top">
-                  <input type="checkbox" disabled checked={!!it.done} readOnly aria-label="Open" />
-                  <span className="md-title">{it.text}</span>
-                </div>
-                {it.meta && <div className="md-meta" style={{ marginTop: '4px' }}>{it.meta}</div>}
-              </div>
-            ))}
-      </MdSection>
-
-      <MdSection title="Customer Situations">
-        {situations.length === 0
-          ? <div className="md-muted">No ongoing customer situations.</div>
-          : situations.map(it => {
-              const parts = (it.text || '').split(' - ');
-              const sitName = parts[0];
-              const sitSummary = parts.slice(1).join(' - ');
-              return (
-                <div className="md-card md-sit" key={it.id}>
-                  <div className="md-sit-name">{sitName}</div>
-                  {sitSummary && <div className="md-sit-summary">{sitSummary}</div>}
-                  {it.meta && <div className="md-sit-meta">{it.meta}</div>}
-                </div>
-              );
-            })}
-      </MdSection>
-
-      <MdSection title="Open Projects">
+      {/* Open Projects - single tab-switch link; the Projects tab is the one source. */}
+      <MdSec title="Open Projects">
         <p className="md-projlink-sub">Your full project list lives on the Projects tab - one source of truth, no duplicate copy here.</p>
         <button type="button" className="md-viewall" onClick={() => onSelect(PROJECTS_TAB)}>
           View All Projects <span className="md-arrow" aria-hidden="true">→</span>
         </button>
-      </MdSection>
+      </MdSec>
 
       {completed.length > 0 && (
-        <MdSection title="Recently Closed">
-          <details className="proj-detail" style={{ background: '#fff', border: '1px solid #cdd6e3', borderRadius: '10px', padding: '12px 14px' }}>
-            <summary>Recently Closed ({completed.length})</summary>
-            {completed.map(it => (
-              <div className="md-check md-done" key={it.id} style={{ marginTop: '8px' }}>
-                <input type="checkbox" disabled checked readOnly aria-label="Completed" />
-                <span className="md-check-body">
-                  <span className="md-check-text">{it.text}{it.doneAt && <span className="md-donestamp">done {it.doneAt}</span>}</span>
-                  {it.meta && <span className="md-meta">{it.meta}</span>}
-                </span>
-              </div>
-            ))}
+        <MdSec title="Recently Closed" count={completed.length}>
+          <details className="md-ctx">
+            <summary>Show {completed.length} recently closed</summary>
+            <table className="md-tbl" style={{ marginTop: '8px' }}>
+              <thead><tr><th aria-label="Done"></th><th>Date</th><th>Item</th><th>Notes</th></tr></thead>
+              <tbody>
+                {completed.map(it => (
+                  <tr key={it.id}>
+                    <td><input type="checkbox" className="md-chk" checked={!!it.done} disabled={busy}
+                          aria-label={it.done ? 'Restore (mark not done)' : 'Mark done'}
+                          onChange={() => write('PATCH', '/api/briefing/items/' + it.id, { expected_version: it.version, done: it.done ? 0 : 1 })} /></td>
+                    <td className="md-dt">{mdDate(it.itemDate || it.doneAt)}</td>
+                    <td><span className={it.done ? 'md-done-text' : ''}>{it.text}</span></td>
+                    <td className="md-note-cell">{it.context || ''}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </details>
-        </MdSection>
+        </MdSec>
       )}
 
       <div style={{ height: '40px' }} />

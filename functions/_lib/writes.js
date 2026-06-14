@@ -78,6 +78,20 @@ export const PROJECT_CONTENT_FIELDS = [
 export const PROJECT_STRUCTURE_FIELDS = ["group", "sort"];
 export const ITEM_FIELDS = ["text", "stage", "stage_class", "meta", "done", "sort"];
 
+// Briefing items (PB2b). Owner-scoped, private-per-user rows. `section` is included
+// so reclassify (move an item between sections) goes through the same whitelist;
+// anything not listed is rejected. NOTE: there is no admin/member split on a user's
+// OWN briefing - these endpoints drop requireRole and gate on owner_email instead.
+export const BRIEFING_ITEM_FIELDS = [
+  "text", "item_date", "project", "owner", "status_label", "status_class", "context", "sort", "done", "section",
+];
+// Sections a human may add to / reclassify into. Mirrors the DB CHECK on
+// briefing_items.section minus `completed` (reached via the done flag, not the
+// section dropdown). `needs_attention` is intentionally absent: it is a derived
+// alert strip (briefing_state JSON), not a briefing_items section - making it an
+// editable row would need a schema+data migration this phase deliberately avoids.
+export const BRIEFING_EDITABLE_SECTIONS = ["carryover", "pending", "waiting_on", "customer_situation"];
+
 const CONTROL_KEYS = new Set(["expected_version"]);
 
 /**
@@ -109,31 +123,40 @@ export function pickFields(body, allowed) {
  *       row exists   -> { ok:false, changes:0, current:<live row> }      (409: stale version)
  *       row gone     -> { ok:false, changes:0, current:null }            (404: missing/deleted)
  *
+ * ownerScope (PB2b, optional): {column, value} appended as `AND "<column>" = ?` to
+ * BOTH the conditional UPDATE and the disambiguating re-read, so an owner-scoped write
+ * is atomic (no TOCTOU) and a row owned by someone else reads as gone -> 404 (the
+ * handler must NOT distinguish "not yours" from "missing", so existence does not leak).
+ *
  * @param {object} db   D1Database (or a compatible shim in the offline harness)
- * @param {{table:string, id:number, fields:Object, expectedVersion:number, updatedBy:string}} opts
+ * @param {{table:string, id:number, fields:Object, expectedVersion:number, updatedBy:string, ownerScope?:{column:string,value:any}|null}} opts
  */
-export async function compareAndSet(db, { table, id, fields, expectedVersion, updatedBy }) {
+export async function compareAndSet(db, { table, id, fields, expectedVersion, updatedBy, ownerScope = null }) {
   const cols = Object.keys(fields);
   const setParts = cols.map((c) => `"${c}" = ?`);
   const now = new Date().toISOString();
+  const ownerPred = ownerScope ? ` AND "${ownerScope.column}" = ?` : "";
   const sql =
     `UPDATE "${table}" SET ${setParts.length ? setParts.join(", ") + ", " : ""}` +
     `version = version + 1, updated_at = ?, updated_by = ? ` +
-    `WHERE id = ? AND deleted_at IS NULL AND version = ?`;
+    `WHERE id = ? AND deleted_at IS NULL AND version = ?${ownerPred}`;
   const binds = [...cols.map((c) => fields[c]), now, updatedBy, id, expectedVersion];
+  if (ownerScope) binds.push(ownerScope.value);
 
   const res = await db.prepare(sql).bind(...binds).run();
   if (res.meta.changes === 1) {
     // Re-read WITHOUT the deleted_at filter so a soft-delete still returns the
-    // (now-deleted) row for the audit after-snapshot.
+    // (now-deleted) row for the audit after-snapshot. (id is the PK; the UPDATE only
+    // applied because the owner predicate already matched, so id alone is safe here.)
     const current = await db.prepare(`SELECT * FROM "${table}" WHERE id = ?`).bind(id).first();
     return { ok: true, changes: 1, current };
   }
-  // No row matched id AND version: version moved underneath us, or the row is gone.
-  const live = await db
-    .prepare(`SELECT * FROM "${table}" WHERE id = ? AND deleted_at IS NULL`)
-    .bind(id)
-    .first();
+  // No row matched: version moved underneath us, the row is gone, OR it is not ours.
+  // The re-read carries the SAME owner predicate, so a cross-owner row returns null
+  // -> current:null -> the handler answers 404, never 409 (no existence leak).
+  const liveSql = `SELECT * FROM "${table}" WHERE id = ? AND deleted_at IS NULL${ownerPred}`;
+  const liveBinds = ownerScope ? [id, ownerScope.value] : [id];
+  const live = await db.prepare(liveSql).bind(...liveBinds).first();
   return { ok: false, changes: 0, current: live || null };
 }
 
