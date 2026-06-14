@@ -76,6 +76,24 @@ function parseTable(block) {
   return rows;
 }
 
+// Best-effort display project label parsed from an item string (PB2a). NOT a FK -
+// a real deep-link into the Projects tab is a later backlog item. Returns null when
+// nothing confident matches (the column then renders blank, never invented).
+function parseProject(text) {
+  if (!text) return null;
+  // Leading "Name: ..." prefix (e.g. "SchoolTRAK: create dedicated subdomain").
+  const prefix = text.match(/^([A-Za-z][\w./ ]*?):\s/);
+  if (prefix) return prefix[1].trim();
+  const t = text.toLowerCase();
+  if (/\b(timeclock|time clock|gone for the day|tt7|tt3|tt10|clock)\b/.test(t)) return "TimeClock";
+  if (/\b(schooltrak|school track|period[- ]rule|subdomain|kiosk|positive attendance|\bpa\b)\b/.test(t)) return "SchoolTRAK";
+  if (/\bvirtuatime\b/.test(t)) return "VirtuaTime";
+  if (/\b(rma|blue star|printer|diagnostic|hardware|enclosure|humidity)\b/.test(t)) return "Hardware/RMA";
+  if (/\brenewal/.test(t)) return "Renewals";
+  if (/\b(id badging|id product|id machine|id install|id relocation|id docs?)\b/.test(t)) return "ID";
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // Read inputs
 // ---------------------------------------------------------------------------
@@ -110,21 +128,40 @@ let generated = null;
 // ---------------------------------------------------------------------------
 const items = [];
 
+// Map the agenda Status text to (label, class) for the pill (never color-alone:
+// the label rides with the colour). Unknown -> watch (the softer bucket).
+function statusToPill(raw) {
+  const s = (raw || "").trim();
+  if (!s) return { label: null, cls: null };
+  const low = s.toLowerCase();
+  if (/at risk|risk/.test(low)) return { label: s, cls: "risk" };
+  if (/watch/.test(low)) return { label: s, cls: "watch" };
+  return { label: s, cls: "watch" };
+}
+
 // Carryover Log: | Date flagged | Item | Reason carried over |
+//   item_date=Date flagged, project=parsed, text=Item, context=Reason.
 for (const r of parseTable(sectionBlock(md, "Carryover Log"))) {
   const [dateFlagged, item, reason] = r;
   if (!item) continue;
   items.push({
     section: "carryover",
     text: item,
-    meta: [`flagged ${dateFlagged}`, reason].filter(Boolean).join(" - "),
+    meta: [`flagged ${dateFlagged}`, reason].filter(Boolean).join(" - "), // back-compat
+    item_date: dateFlagged || null,
+    project: parseProject(item),
+    owner: null,
+    status_label: null,
+    status_class: null,
+    context: reason || null,
     done: 0,
     done_at: null,
     source: "Carryover Log",
   });
 }
 
-// Pending Adam's Action: | Item | Requested by | Date | Context |
+// Pending Adam's Action -> "Pending Your Action": | Item | Requested by | Date | Context |
+//   text=Item, owner=Requested by, item_date=Date, context=Context.
 for (const r of parseTable(sectionBlock(md, "Pending Adam's Action"))) {
   const [item, requestedBy, date, context] = r;
   if (!item) continue;
@@ -132,14 +169,20 @@ for (const r of parseTable(sectionBlock(md, "Pending Adam's Action"))) {
     section: "pending",
     text: item,
     meta: [requestedBy && `Requested by ${requestedBy}`, date, context].filter(Boolean).join(" - "),
+    item_date: date || null,
+    project: null,
+    owner: requestedBy || null,
+    status_label: null,
+    status_class: null,
+    context: context || null,
     done: 0,
     done_at: null,
     source: "Pending Adam's Action",
-    _date: date,
   });
 }
 
 // Waiting On Others: | Item | Sent to | Date sent | Context |
+//   text=Item, owner=Sent to, item_date=Date sent, project=parsed, context=Context.
 for (const r of parseTable(sectionBlock(md, "Waiting On Others"))) {
   const [item, sentTo, dateSent, context] = r;
   if (!item) continue;
@@ -147,21 +190,34 @@ for (const r of parseTable(sectionBlock(md, "Waiting On Others"))) {
     section: "waiting_on",
     text: item,
     meta: [sentTo && `Sent to ${sentTo}`, dateSent, context].filter(Boolean).join(" - "),
+    item_date: dateSent || null,
+    project: parseProject(item),
+    owner: sentTo || null,
+    status_label: null,
+    status_class: null,
+    context: context || null,
     done: 0,
     done_at: null,
     source: "Waiting On Others",
-    _date: dateSent,
   });
 }
 
 // Customer Situations: | Customer | Situation | Owner | Status |
+//   text=Customer (name), context=Situation, owner=Owner, status=Status pill.
 for (const r of parseTable(sectionBlock(md, "Customer Situations"))) {
   const [customer, situation, owner, statusCol] = r;
   if (!customer && !situation) continue;
+  const pill = statusToPill(statusCol);
   items.push({
     section: "customer_situation",
-    text: [customer, situation].filter(Boolean).join(" - "),
+    text: customer || situation, // the name is the label / scan anchor
     meta: [owner && `Owner: ${owner}`, statusCol].filter(Boolean).join(" - "),
+    item_date: null,
+    project: null,
+    owner: owner || null,
+    status_label: pill.label,
+    status_class: pill.cls,
+    context: situation || null,
     done: 0,
     done_at: null,
     source: "Customer Situations",
@@ -169,6 +225,7 @@ for (const r of parseTable(sectionBlock(md, "Customer Situations"))) {
 }
 
 // Completed (last 30 days): | Date | Item | Notes |
+//   item_date=Date, text=Item, context=Notes.
 for (const r of parseTable(sectionBlock(md, "Completed (last 30 days)"))) {
   const [date, item, notes] = r;
   if (!item) continue;
@@ -176,6 +233,12 @@ for (const r of parseTable(sectionBlock(md, "Completed (last 30 days)"))) {
     section: "completed",
     text: item,
     meta: notes || "",
+    item_date: date || null,
+    project: parseProject(item),
+    owner: null,
+    status_label: null,
+    status_class: null,
+    context: notes || null,
     done: 1,
     done_at: date || null,
     source: "Completed (last 30 days)",
@@ -233,16 +296,14 @@ let calibrationSnapshot = null;
 const needsAttention = [];
 {
   const genMs = generated ? Date.parse(generated) : Date.now();
+  const FROM = { carryover: "Carryover", pending: "Pending", waiting_on: "Waiting on" };
   const aged = [];
-  // Carryover (its flag date lives in meta as "flagged YYYY-MM-DD").
-  for (const it of items.filter((x) => x.section === "carryover")) {
-    const m = it.meta.match(/flagged\s+([0-9]{4}-[0-9]{2}-[0-9]{2})/);
-    if (m) aged.push({ text: it.text, date: m[1], from: "Carryover" });
-  }
-  // Pending + waiting items carry _date.
-  for (const it of items.filter((x) => x.section === "pending" || x.section === "waiting_on")) {
-    if (it._date && /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(it._date)) {
-      aged.push({ text: it.text, date: it._date, from: it.section === "pending" ? "Pending" : "Waiting on" });
+  // Aging is anchored to item_date (flagged / due / sent) on the dated sections.
+  for (const it of items) {
+    const from = FROM[it.section];
+    if (!from) continue;
+    if (it.item_date && /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(it.item_date)) {
+      aged.push({ it, date: it.item_date, from });
     }
   }
   for (const a of aged) {
@@ -252,18 +313,32 @@ const needsAttention = [];
     .filter((a) => a.days >= 7)
     .sort((x, y) => y.days - x.days)
     .slice(0, 8)
-    .forEach((a) => needsAttention.push({ text: a.text, meta: `${a.from} - ${a.days}d open (since ${a.date})` }));
+    .forEach((a) => {
+      const why = `${a.from} - ${a.days}d open (since ${a.date})`;
+      needsAttention.push({
+        text: a.it.text,
+        project: a.it.project || null,
+        age: `${a.days}d`,
+        // Age IS the signal and rides as text in the pill (never colour-alone);
+        // class is reinforcement: 30d+ reads as risk, 7-29d as watch.
+        statusClass: a.days >= 30 ? "risk" : "watch",
+        context: why,
+        meta: why, // back-compat
+      });
+    });
 
   if (calibrationSnapshot) {
+    const why = `${calibrationSnapshot.aging30} cases 30d+, ${calibrationSnapshot.aging90} cases 90d+; oldest ${calibrationSnapshot.oldest}`;
     needsAttention.push({
       text: "Support calibration aging",
-      meta: `${calibrationSnapshot.aging30} cases 30d+, ${calibrationSnapshot.aging90} cases 90d+; oldest ${calibrationSnapshot.oldest}`,
+      project: "Support Calibration",
+      age: null,
+      statusClass: "risk",
+      context: why,
+      meta: why,
     });
   }
 }
-
-// Drop the private _date helper before serialising.
-for (const it of items) delete it._date;
 
 // ---------------------------------------------------------------------------
 // project_refs - Active Projects "#### Name (id N)" headings, matched by name

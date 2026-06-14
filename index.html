@@ -174,7 +174,7 @@ textarea.ef-ctl{min-height:44px;resize:vertical;line-height:1.4}
 .hdr-myday-btn:hover{border-color:#6bc04b !important;color:#fff !important}
 .hdr-myday-btn.active{background:#6bc04b !important;border-color:#6bc04b !important;color:#10261a !important}
 .myday-view{flex:1;overflow-y:auto;padding:28px 48px 80px;scrollbar-width:thin;scrollbar-color:#bbb #fff;background:#e7ecf2}
-.md-wrap{max-width:840px;margin:0 auto}
+.md-wrap{max-width:1040px;margin:0 auto}
 .md-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .md-readonly{display:inline-block;font-size:7.5pt;font-weight:700;background:#e6eef6;color:#0a4f7a;border-radius:999px;padding:2px 10px;margin-left:8px;vertical-align:middle}
 .md-kpis{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 20px}
@@ -207,6 +207,47 @@ textarea.ef-ctl{min-height:44px;resize:vertical;line-height:1.4}
 .md-viewall:focus-visible{outline:3px solid #6bc04b;outline-offset:2px}
 .md-viewall .md-arrow{font-size:12pt;line-height:1}
 .md-muted{font-size:9pt;color:#4b5563;font-style:italic;margin-bottom:10px}
+/* ---- PB2a: B+C combo (hero, sections, tables, pills, expandable rows, proposal cards) ---- */
+.md-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;background:linear-gradient(100deg,#006098,#0a7bb8);color:#fff;border-radius:12px;padding:16px 20px;margin-bottom:16px}
+.md-hero h1{font-size:17pt;margin:0;color:#fff;font-weight:700;line-height:1.15}
+.md-hero-date{opacity:.93;font-size:9pt;margin-top:3px}
+.md-hero-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.md-hero .md-readonly{background:#fff;color:#006098}
+.md-sec{background:#fff;border:1px solid #d8e0e8;border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.md-sec-hd{font-size:11.5pt;margin:0 0 10px;color:#006098;display:flex;align-items:center;gap:8px;font-weight:700;flex-wrap:wrap}
+.md-count{font-size:8pt;font-weight:600;color:#5a6b7b;background:#eef3f7;border-radius:10px;padding:1px 8px}
+.md-stub{font-size:7.5pt;font-weight:600;color:#5a6b7b;background:#eef3f7;border-radius:6px;padding:2px 7px}
+.md-tbl{width:100%;border-collapse:collapse;font-size:10pt}
+.md-tbl th{text-align:left;font-size:7.5pt;text-transform:uppercase;letter-spacing:.04em;color:#5a6b7b;border-bottom:1.5px solid #d8e0e8;padding:6px 8px;font-weight:700}
+.md-tbl td{padding:8px;border-bottom:1px solid #e7edf3;vertical-align:top;color:#1f2933;line-height:1.45}
+.md-tbl tr:last-child td{border-bottom:none}
+.md-proj{font-weight:600;color:#006098}
+.md-dt{color:#5a6b7b;white-space:nowrap;font-variant-numeric:tabular-nums}
+.md-cust{font-weight:700;color:#1f2933}
+.md-note-cell{color:#5a6b7b;font-size:9pt}
+.md-pill{display:inline-flex;align-items:center;gap:5px;font-size:8pt;font-weight:700;padding:2px 9px;border-radius:10px;white-space:nowrap}
+.md-pill::before{content:"";width:7px;height:7px;border-radius:50%}
+.md-pill-risk{background:#fef3f2;color:#b42318} .md-pill-risk::before{background:#b42318}
+.md-pill-watch{background:#fffbeb;color:#8a6d00} .md-pill-watch::before{background:#8a6d00}
+.md-pill-ok{background:#ecfdf3;color:#067647} .md-pill-ok::before{background:#6bc04b}
+.md-needs-sec{border-left:4px solid #b54708;background:#fff6ed}
+.md-needs-sec .md-sec-hd{color:#b54708}
+.md-needs-line{margin:0 0 7px;font-size:10pt;line-height:1.5;color:#1f2933}
+.md-needs-line:last-child{margin-bottom:0}
+.md-needs-line .md-proj{color:#92400e}
+.md-needs-ctx{color:#5a6b7b}
+.md-ctx{margin:2px 0}
+.md-ctx summary{cursor:pointer;color:#5a6b7b;font-size:9pt;min-height:24px;display:inline-flex;align-items:center;list-style-position:inside}
+.md-ctx[open] summary{color:#006098}
+.md-ctx p{margin:6px 0 2px;color:#5a6b7b;font-size:9pt;line-height:1.55}
+.md-prop{border:1px solid #d8e0e8;border-radius:9px;padding:10px 12px;margin-bottom:8px}
+.md-prop:last-child{margin-bottom:0}
+.md-prop-text{font-weight:700;color:#1f2933;font-size:10pt;line-height:1.4}
+.md-prop-meta{color:#5a6b7b;font-size:8.5pt;margin-top:4px}
+.md-prop-act{display:flex;gap:6px;margin-top:9px}
+.md-mini{font-family:'Roboto',Arial,sans-serif;font-size:8.5pt;font-weight:600;border-radius:7px;padding:5px 12px;min-height:24px;border:1px solid #d8e0e8;background:#f4f7fa;color:#7c8a99;cursor:not-allowed}
+.md-prop-note{font-size:8.5pt;color:#5a6b7b;font-style:italic;margin:0 0 10px}
+.md-empty-note{color:#5a6b7b;font-size:9.5pt;font-style:italic;margin:0}
 .md-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 40px;text-align:center}
 .md-empty-icon{font-size:40px;margin-bottom:14px}
 .md-empty-title{font-size:12pt;font-weight:700;color:#445063;margin-bottom:6px}
@@ -943,29 +984,65 @@ function ProjectsView({ data }) {
 // are disabled/static, there is no Notes box, and completed items render struck-through
 // (those write paths are PB2). A user with no briefing gets a friendly empty-state.
 
-// One section block with the shared Projects-tab group header.
-function MdSection({ title, note, children }) {
+// PB2a B+C combo helpers ------------------------------------------------------
+
+// Section shell: white card, brand-blue Title-Case heading, optional count badge,
+// optional "stub" badge, optional warn styling (the Needs Attention strip).
+function MdSec({ title, count, stub, warn, children }) {
   return (
-    <div className="md-section">
-      <div className="proj-group-hdr">{title}{note && <span className="proj-group-note">{note}</span>}</div>
+    <section className={"md-sec" + (warn ? " md-needs-sec" : "")}>
+      <h2 className="md-sec-hd">
+        {title}
+        {typeof count === 'number' && <span className="md-count">{count}</span>}
+        {stub && <span className="md-stub">{stub}</span>}
+      </h2>
       {children}
-    </div>
+    </section>
   );
 }
 
-// A static (disabled) checkable line: checkbox + text + optional meta. Struck through
-// with a green "done [date]" stamp when complete (history stays visible, per the artifact).
-function MdCheckLine({ text, meta, done, doneAt }) {
-  return (
-    <div className={"md-check" + (done ? " md-done" : "")}>
-      <input type="checkbox" disabled checked={!!done} readOnly aria-label={done ? "Completed" : "Open"} />
-      <span className="md-check-body">
-        <span className="md-check-text">{text}{done && doneAt && <span className="md-donestamp">done {doneAt}</span>}</span>
-        {meta && <span className="md-meta">{meta}</span>}
-      </span>
-    </div>
-  );
+// Status pill - the colour ALWAYS rides with the label text (never colour-alone, WCAG 1.4.1).
+function MdPill({ cls, children }) {
+  const c = cls === 'risk' ? 'md-pill-risk' : cls === 'ok' ? 'md-pill-ok' : 'md-pill-watch';
+  return <span className={"md-pill " + c}>{children}</span>;
 }
+
+// Expandable "why" row - long context behind native details/summary so tables stay scannable.
+function MdCtx({ summary, children }) {
+  if (!children) return null;
+  return <details className="md-ctx"><summary>{summary}</summary><p>{children}</p></details>;
+}
+
+// "2026-06-05" / "~2026-06-04" -> "6/05" / "~6/04" (drop the year for scan density).
+function mdDate(d) {
+  if (!d) return '';
+  const m = String(d).match(/^(~?)(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? (m[1] + String(Number(m[3])) + '/' + m[4]) : String(d);
+}
+
+// Long hero date, formatted from the ISO parts in UTC so there is no timezone day-shift.
+function mdHeroDate(iso) {
+  const m = iso && String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return 'Your daily briefing';
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const dt = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+  return days[dt.getUTCDay()] + ', ' + months[Number(m[2]) - 1] + ' ' + Number(m[3]) + ', ' + m[1];
+}
+
+function mdGreeting() {
+  const h = new Date().getHours();
+  return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+}
+
+// Sample proposals so the READ-ONLY Pending Your Review card layout is reviewable now.
+// The live proposal store + Approve/Deny writes land in PB2c; real proposals
+// (b.proposals from the API) take precedence over these the moment they exist.
+const SAMPLE_PROPOSALS = [
+  { id: 'sample-1', text: 'Log "comp-time on clocks" as a feature request', source: '6/11 Weekly Huddle', targetSection: 'Waiting On Others' },
+  { id: 'sample-2', text: 'Add Customer Situation: Canyons RFP (products already purchased)', source: '6/10 Daily Connect', targetSection: 'Customer Situations' },
+  { id: 'sample-3', text: 'Mark complete: Watertown HS + Green Hill HS ID resolved', source: '6/11 Wilson County ID', targetSection: 'Completed' },
+];
 
 function MyDayView({ onSelect }) {
   const [data, setData] = useState(null);
@@ -1009,8 +1086,12 @@ function MyDayView({ onSelect }) {
   const situations = sec.customerSituations || [];
   const completed = sec.completed || [];
   const projs = b.openProjects || [];
-  const meetings = b.todaysMeetings || [];
   const needs = b.needsAttention || [];
+  // Proposals store lands in PB2c; until then fall back to sample cards so the
+  // read-only Approve/Deny layout is reviewable. Real proposals win when present.
+  const liveProposals = Array.isArray(b.proposals) ? b.proposals : [];
+  const proposals = liveProposals.length ? liveProposals : SAMPLE_PROPOSALS;
+  const proposalsAreSample = liveProposals.length === 0;
 
   const isEmpty = !b.generated && projs.length === 0 &&
     [carry, pending, waiting, situations, completed].every(a => a.length === 0);
@@ -1030,122 +1111,179 @@ function MyDayView({ onSelect }) {
   return (
     <div className="myday-view">
       <div className="md-wrap">
-      <div className="md-head">
+
+      <div className="md-hero">
         <div>
-          <h1 className="pv-h1">My Day<span className="md-readonly">Read-only</span></h1>
-          <div className="pv-sub">
-            Your daily briefing{b.generated ? ' · generated ' + b.generated : ''}
-            {b.owner ? ' · ' + b.owner : ''}
-            {status === 'loading' && <span> · refreshing…</span>}
-            {status === 'error' && <span> · showing last loaded copy</span>}
+          <h1>{mdGreeting()}</h1>
+          <div className="md-hero-date">
+            {mdHeroDate(b.generated)}{b.owner ? ' · ' + b.owner : ''}
+            {status === 'loading' && ' · refreshing…'}
+            {status === 'error' && ' · showing last loaded copy'}
           </div>
         </div>
-        {RefreshBtn}
+        <div className="md-hero-right">
+          <span className="md-readonly">Read-only</span>
+          {RefreshBtn}
+        </div>
       </div>
 
-      {/* At-a-glance KPI strip (counts only - no editorialising). */}
-      <div className="md-kpis">
-        <div className="md-kpi"><b>{meetings.length}</b><span>Meetings</span></div>
-        <div className="md-kpi"><b>{projs.length}</b><span>Open projects</span></div>
-        <div className="md-kpi"><b>{pending.length}</b><span>Pending you</span></div>
-        <div className="md-kpi"><b>{carry.length}</b><span>Carryover</span></div>
-      </div>
-
+      {/* Needs Attention - compact warn alert strip pinned at the top (age pill + bold project). */}
       {needs.length > 0 && (
-        <MdSection title={<><span className="md-attn-ico" aria-hidden="true">⚠</span>Needs Attention</>}>
-          <div className="md-needs" role="note" aria-label="Items that need your attention">
-            <ul>
-              {needs.map((nA, i) => (
-                <li key={i}>{nA.text}{nA.meta && <span className="md-meta">{nA.meta}</span>}</li>
-              ))}
-            </ul>
+        <MdSec warn count={needs.length}
+          title={<span><span className="md-attn-ico" aria-hidden="true">⚠</span>Needs Attention</span>}>
+          <div role="note" aria-label="Items that need your attention">
+            {needs.map((nA, i) => (
+              <p className="md-needs-line" key={i}>
+                {nA.age && <MdPill cls={nA.statusClass}>{nA.age}</MdPill>}{nA.age ? ' ' : ''}
+                {nA.project && <b className="md-proj">{nA.project}</b>}{nA.project ? ' - ' : ''}
+                {nA.text}
+                {!nA.age && nA.context && <span className="md-needs-ctx"> · {nA.context}</span>}
+              </p>
+            ))}
           </div>
-        </MdSection>
+        </MdSec>
       )}
 
-      <MdSection title="Today's Meetings">
-        {meetings.length === 0
-          ? <div className="md-muted">No meetings on today's snapshot.</div>
-          : meetings.map((m, i) => (
-              <div className="md-card" key={i}>
-                <div className="md-check-body">
-                  <span className="md-check-text">{m.title || m.summary || 'Meeting'}</span>
-                  <span className="md-meta">
-                    {[m.time || [m.start, m.end].filter(Boolean).join('-'), m.attendees, m.location].filter(Boolean).join(' · ')}
-                  </span>
+      {/* Pending Your Review - AI proposals as approve/deny cards, RENDERED READ-ONLY (live in PB2c). */}
+      <MdSec title="Pending Your Review" stub="AI proposals - read-only">
+        {proposalsAreSample && (
+          <p className="md-prop-note">Preview - sample proposals. The live Approve / Deny queue arrives in PB2c.</p>
+        )}
+        {proposals.length === 0
+          ? <p className="md-empty-note">No proposals to review right now.</p>
+          : proposals.map((p, i) => (
+              <div className="md-prop" key={p.id || i}>
+                <div className="md-prop-text">{p.text}</div>
+                <div className="md-prop-meta">
+                  {[p.source && ('from ' + p.source), p.targetSection && ('→ ' + p.targetSection)].filter(Boolean).join(' · ')}
+                </div>
+                <div className="md-prop-act" aria-hidden="true">
+                  <button type="button" className="md-mini" disabled>Approve</button>
+                  <button type="button" className="md-mini" disabled>Deny</button>
                 </div>
               </div>
             ))}
-      </MdSection>
+      </MdSec>
 
-      <MdSection title="Carryover from Yesterday">
+      {/* Carryover - Date | Project | Item, with an expandable "why carried" row. */}
+      <MdSec title="Carryover" count={carry.length}>
         {carry.length === 0
           ? <div className="md-muted">Nothing carried over.</div>
-          : carry.map(it => (
-              <div className="md-card" key={it.id}>
-                <MdCheckLine text={it.text} done={it.done} />
-                {it.meta && (
-                  <details className="proj-detail"><summary>What this is</summary>
-                    <div className="pd-row">{it.meta}</div>
-                  </details>
-                )}
-              </div>
-            ))}
-      </MdSection>
+          : (
+            <table className="md-tbl">
+              <thead><tr><th>Date</th><th>Project</th><th>Item</th></tr></thead>
+              <tbody>
+                {carry.map(it => (
+                  <React.Fragment key={it.id}>
+                    <tr>
+                      <td className="md-dt">{mdDate(it.itemDate)}</td>
+                      <td className="md-proj">{it.project || '-'}</td>
+                      <td>{it.text}</td>
+                    </tr>
+                    {it.context && <tr><td colSpan={3}><MdCtx summary="Why carried">{it.context}</MdCtx></td></tr>}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          )}
+      </MdSec>
 
-      <MdSection title="Pending Your Review">
-        {pending.length === 0
-          ? <div className="md-muted">Nothing pending your review.</div>
-          : pending.map(it => (
-              <div className="md-card md-title-card" key={it.id}>
-                <div className="md-title-top">
-                  <input type="checkbox" disabled checked={!!it.done} readOnly aria-label="Open" />
-                  <span className="md-title">{it.text}</span>
-                </div>
-                {it.meta && <div className="md-meta" style={{ marginTop: '4px' }}>{it.meta}</div>}
-              </div>
-            ))}
-      </MdSection>
-
-      <MdSection title="Customer Situations">
+      {/* Customer Situations - name bold + status pill; full situation in the expandable. */}
+      <MdSec title="Customer Situations" count={situations.length}>
         {situations.length === 0
           ? <div className="md-muted">No ongoing customer situations.</div>
-          : situations.map(it => {
-              const parts = (it.text || '').split(' - ');
-              const sitName = parts[0];
-              const sitSummary = parts.slice(1).join(' - ');
-              return (
-                <div className="md-card md-sit" key={it.id}>
-                  <div className="md-sit-name">{sitName}</div>
-                  {sitSummary && <div className="md-sit-summary">{sitSummary}</div>}
-                  {it.meta && <div className="md-sit-meta">{it.meta}</div>}
-                </div>
-              );
-            })}
-      </MdSection>
+          : (
+            <table className="md-tbl">
+              <thead><tr><th>Customer</th><th>Status</th><th>Owner</th></tr></thead>
+              <tbody>
+                {situations.map(it => (
+                  <React.Fragment key={it.id}>
+                    <tr>
+                      <td className="md-cust">{it.text}</td>
+                      <td>{it.statusLabel ? <MdPill cls={it.statusClass}>{it.statusLabel}</MdPill> : '-'}</td>
+                      <td>{it.owner || '-'}</td>
+                    </tr>
+                    {it.context && <tr><td colSpan={3}><MdCtx summary="Situation">{it.context}</MdCtx></td></tr>}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          )}
+      </MdSec>
 
-      <MdSection title="Open Projects">
+      {/* Waiting On Others - Item | Sent to | Date | Project, with expandable context. */}
+      <MdSec title="Waiting On Others" count={waiting.length}>
+        {waiting.length === 0
+          ? <div className="md-muted">Not waiting on anyone right now.</div>
+          : (
+            <table className="md-tbl">
+              <thead><tr><th>Item</th><th>Sent to</th><th>Date</th><th>Project</th></tr></thead>
+              <tbody>
+                {waiting.map(it => (
+                  <React.Fragment key={it.id}>
+                    <tr>
+                      <td>{it.text}</td>
+                      <td>{it.owner || '-'}</td>
+                      <td className="md-dt">{mdDate(it.itemDate)}</td>
+                      <td className="md-proj">{it.project || '-'}</td>
+                    </tr>
+                    {it.context && <tr><td colSpan={4}><MdCtx summary="Context">{it.context}</MdCtx></td></tr>}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          )}
+      </MdSec>
+
+      {/* Pending Your Action - Item | From | Date, with expandable context. */}
+      <MdSec title="Pending Your Action" count={pending.length}>
+        {pending.length === 0
+          ? <div className="md-muted">Nothing pending your action.</div>
+          : (
+            <table className="md-tbl">
+              <thead><tr><th>Item</th><th>From</th><th>Date</th></tr></thead>
+              <tbody>
+                {pending.map(it => (
+                  <React.Fragment key={it.id}>
+                    <tr>
+                      <td>{it.text}</td>
+                      <td>{it.owner || '-'}</td>
+                      <td className="md-dt">{mdDate(it.itemDate)}</td>
+                    </tr>
+                    {it.context && <tr><td colSpan={3}><MdCtx summary="Context">{it.context}</MdCtx></td></tr>}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          )}
+      </MdSec>
+
+      {/* Open Projects - single tab-switch link; the Projects tab is the one source. */}
+      <MdSec title="Open Projects">
         <p className="md-projlink-sub">Your full project list lives on the Projects tab - one source of truth, no duplicate copy here.</p>
         <button type="button" className="md-viewall" onClick={() => onSelect(PROJECTS_TAB)}>
           View All Projects <span className="md-arrow" aria-hidden="true">→</span>
         </button>
-      </MdSection>
+      </MdSec>
 
       {completed.length > 0 && (
-        <MdSection title="Recently Closed">
-          <details className="proj-detail" style={{ background: '#fff', border: '1px solid #cdd6e3', borderRadius: '10px', padding: '12px 14px' }}>
-            <summary>Recently Closed ({completed.length})</summary>
-            {completed.map(it => (
-              <div className="md-check md-done" key={it.id} style={{ marginTop: '8px' }}>
-                <input type="checkbox" disabled checked readOnly aria-label="Completed" />
-                <span className="md-check-body">
-                  <span className="md-check-text">{it.text}{it.doneAt && <span className="md-donestamp">done {it.doneAt}</span>}</span>
-                  {it.meta && <span className="md-meta">{it.meta}</span>}
-                </span>
-              </div>
-            ))}
+        <MdSec title="Recently Closed" count={completed.length}>
+          <details className="md-ctx">
+            <summary>Show {completed.length} recently closed</summary>
+            <table className="md-tbl" style={{ marginTop: '8px' }}>
+              <thead><tr><th>Date</th><th>Item</th><th>Notes</th></tr></thead>
+              <tbody>
+                {completed.map(it => (
+                  <tr key={it.id}>
+                    <td className="md-dt">{mdDate(it.itemDate || it.doneAt)}</td>
+                    <td>{it.text}</td>
+                    <td className="md-note-cell">{it.context || ''}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </details>
-        </MdSection>
+        </MdSec>
       )}
 
       <div style={{ height: '40px' }} />

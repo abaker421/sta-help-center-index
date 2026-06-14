@@ -104,6 +104,13 @@ export function assembleBriefing({ owner, state = null, items = [], refs = [], p
       section: it.section,
       text: it.text,
       meta: it.meta ?? "",
+      // PB2a structured columns (nullable; the tab renders them as real table columns).
+      itemDate: it.item_date ?? null,
+      project: it.project ?? null,
+      owner: it.owner ?? null,
+      statusLabel: it.status_label ?? null,
+      statusClass: it.status_class ?? null,
+      context: it.context ?? null,
       done: !!it.done,
       doneAt: it.done_at ?? null,
       source: it.source ?? null,

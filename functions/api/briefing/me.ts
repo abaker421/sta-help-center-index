@@ -33,7 +33,9 @@ export const onRequestGet: PagesFunction = async ({ env, data }) => {
       ).bind(owner),
       env.DB.prepare(
         // id + version carried so PB2 can PATCH with expected_version (compare-and-set).
-        `SELECT id, section, text, meta, done, done_at, source, sort, version
+        // PB2a adds the structured columns (item_date/project/owner/status_*/context).
+        `SELECT id, section, text, meta, item_date, project, owner, status_label,
+                status_class, context, done, done_at, source, sort, version
            FROM briefing_items
           WHERE owner_email = ? AND deleted_at IS NULL
           ORDER BY section, sort, id`
