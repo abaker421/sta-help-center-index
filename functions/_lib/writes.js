@@ -84,6 +84,9 @@ export const ITEM_FIELDS = ["text", "stage", "stage_class", "meta", "done", "sor
 // OWN briefing - these endpoints drop requireRole and gate on owner_email instead.
 export const BRIEFING_ITEM_FIELDS = [
   "text", "item_date", "project", "owner", "status_label", "status_class", "context", "sort", "done", "section",
+  // PB2b.1: meta carries the optional completion note as JSON ({"done_note":"..."}).
+  // done_at is NOT whitelisted - the PATCH handler stamps it server-side on completion.
+  "meta",
 ];
 // Sections a human may add to / reclassify into. Mirrors the DB CHECK on
 // briefing_items.section minus `completed` (reached via the done flag, not the
