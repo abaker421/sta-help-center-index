@@ -247,6 +247,12 @@ textarea.ef-ctl{min-height:44px;resize:vertical;line-height:1.4}
 .md-prop-act{display:flex;gap:6px;margin-top:9px}
 .md-mini{font-family:'Roboto',Arial,sans-serif;font-size:8.5pt;font-weight:600;border-radius:7px;padding:5px 12px;min-height:24px;border:1px solid #d8e0e8;background:#f4f7fa;color:#7c8a99;cursor:not-allowed}
 .md-prop-note{font-size:8.5pt;color:#5a6b7b;font-style:italic;margin:0 0 10px}
+.md-prop-form{display:flex;flex-direction:column;gap:7px;margin-top:9px;background:#f7fafc;border:1px solid #d8e0e8;border-radius:8px;padding:10px 12px}
+.md-prop-form label{display:flex;flex-direction:column;gap:3px}
+.md-prop-form label span{font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#5a6b7b}
+.md-prop-form input{font-family:'Roboto',Arial,sans-serif;font-size:9.5pt;color:#1f2933;border:1px solid #9bb4c9;border-radius:6px;padding:6px 8px;background:#fff}
+.md-prop-form input:focus{outline:2px solid #006098;outline-offset:0;border-color:#006098}
+.md-prop-err{color:#b42318;font-size:8.5pt;font-weight:600;margin:0}
 .md-empty-note{color:#5a6b7b;font-size:9.5pt;font-style:italic;margin:0}
 /* ---- PB2b: in-tab editing (complete-toggle, inline edit, reclassify, add, delete, 409) ---- */
 .md-chk{width:16px;height:16px;accent-color:#6bc04b;cursor:pointer;margin-top:2px}
@@ -1084,14 +1090,73 @@ function mdGreeting() {
   return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
 }
 
-// Sample proposals so the READ-ONLY Pending Your Review card layout is reviewable now.
-// The live proposal store + Approve/Deny writes land in PB2c; real proposals
-// (b.proposals from the API) take precedence over these the moment they exist.
-const SAMPLE_PROPOSALS = [
-  { id: 'sample-1', text: 'Log "comp-time on clocks" as a feature request', source: '6/11 Weekly Huddle', targetSection: 'Waiting On Others' },
-  { id: 'sample-2', text: 'Add Customer Situation: Canyons RFP (products already purchased)', source: '6/10 Daily Connect', targetSection: 'Customer Situations' },
-  { id: 'sample-3', text: 'Mark complete: Watertown HS + Green Hill HS ID resolved', source: '6/11 Wilson County ID', targetSection: 'Completed' },
-];
+// Display label for a proposal's target section (the queue shows where an approved
+// item will land).
+const BR_SECTION_TITLE = {
+  carryover: 'Your Tasks', pending: 'Pending Your Action',
+  waiting_on: 'Waiting On Others', customer_situation: 'Customer Situations',
+};
+
+// PB2c live proposal card: Approve (optional note) / Deny (REQUIRED reason). Approve
+// POSTs to .../approve (the item appears in target_section + card leaves the queue);
+// Deny POSTs to .../deny with the reason. Both send expected_version; onWrite handles
+// 409 reconcile + re-fetch. Owner-private (the API only ever returns the user's own).
+function ProposalCard({ p, onWrite, busy }) {
+  const [mode, setMode] = useState(null); // null | 'approve' | 'deny'
+  const [text, setText] = useState('');
+  const [err, setErr] = useState('');
+  const reset = () => { setMode(null); setText(''); setErr(''); };
+
+  const confirmApprove = async () => {
+    const body = { expected_version: p.version };
+    if (text.trim()) body.approve_note = text.trim();
+    const r = await onWrite('POST', '/api/briefing/proposals/' + p.id + '/approve', body);
+    if (r.ok) reset(); // on success the queue re-fetches and this card disappears
+  };
+  const confirmDeny = async () => {
+    if (!text.trim()) { setErr('A reason is required to deny (it teaches the assistant what not to propose).'); return; }
+    const r = await onWrite('POST', '/api/briefing/proposals/' + p.id + '/deny', { expected_version: p.version, deny_reason: text.trim() });
+    if (r.ok) reset();
+  };
+
+  return (
+    <div className="md-prop">
+      <div className="md-prop-text">{p.text}</div>
+      <div className="md-prop-meta">
+        {[p.source && ('from ' + p.source), p.targetSection && ('→ ' + (BR_SECTION_TITLE[p.targetSection] || p.targetSection))].filter(Boolean).join(' · ')}
+      </div>
+      {p.context && <details className="md-ctx"><summary>Why this was proposed</summary><p>{p.context}</p></details>}
+      {mode === null && (
+        <div className="md-prop-act">
+          <button type="button" className="md-rowbtn md-rowbtn-primary" disabled={busy} onClick={() => { setErr(''); setText(''); setMode('approve'); }}>Approve</button>
+          <button type="button" className="md-rowbtn md-rowbtn-danger" disabled={busy} onClick={() => { setErr(''); setText(''); setMode('deny'); }}>Deny</button>
+        </div>
+      )}
+      {mode === 'approve' && (
+        <div className="md-prop-form">
+          <label><span>Approve note (optional)</span>
+            <input type="text" value={text} disabled={busy} placeholder="optional - any note on the decision" onChange={e => setText(e.target.value)} /></label>
+          <div className="md-editactions">
+            <button type="button" className="md-save" disabled={busy} onClick={confirmApprove}>Confirm approve</button>
+            <button type="button" className="md-cancel" disabled={busy} onClick={reset}>Cancel</button>
+          </div>
+        </div>
+      )}
+      {mode === 'deny' && (
+        <div className="md-prop-form">
+          <label><span>Deny reason (required)</span>
+            <input type="text" value={text} disabled={busy} aria-invalid={!!err} placeholder="required - why this should not be added"
+              onChange={e => { setText(e.target.value); if (err) setErr(''); }} /></label>
+          {err && <p className="md-prop-err" role="alert">{err}</p>}
+          <div className="md-editactions">
+            <button type="button" className="md-save" disabled={busy} onClick={confirmDeny}>Confirm deny</button>
+            <button type="button" className="md-cancel" disabled={busy} onClick={reset}>Cancel</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // PB2b / PB2b.1 in-tab editing ------------------------------------------------
 // Column + edit-field spec per EDITABLE section (mirrors the server BRIEFING_EDITABLE_
@@ -1343,9 +1408,8 @@ function MyDayView({ onSelect }) {
   const needs = b.needsAttention || [];
   // Proposals store lands in PB2c; until then fall back to sample cards so the
   // read-only Approve/Deny layout is reviewable. Real proposals win when present.
-  const liveProposals = Array.isArray(b.proposals) ? b.proposals : [];
-  const proposals = liveProposals.length ? liveProposals : SAMPLE_PROPOSALS;
-  const proposalsAreSample = liveProposals.length === 0;
+  // PB2c: the live pending-proposal queue from the API (owner's own only).
+  const proposals = Array.isArray(b.proposals) ? b.proposals : [];
 
   const isEmpty = !b.generated && projs.length === 0 &&
     [carry, pending, waiting, situations, completed].every(a => a.length === 0);
@@ -1403,25 +1467,12 @@ function MyDayView({ onSelect }) {
           The separate read-only Needs Attention strip is gone. */}
       <BriefingTable sectionKey="carryover" rows={carry} onWrite={write} busy={busy} />
 
-      {/* Pending Your Review - AI proposals as approve/deny cards, RENDERED READ-ONLY (live in PB2c). */}
-      <MdSec title="Pending Your Review" stub="AI proposals - read-only">
-        {proposalsAreSample && (
-          <p className="md-prop-note">Preview - sample proposals. The live Approve / Deny queue arrives in PB2c.</p>
-        )}
+      {/* Pending Your Review - LIVE AI proposal queue (PB2c): Approve (optional note) /
+          Deny (required reason). Cards leave the queue on decision. */}
+      <MdSec title="Pending Your Review" count={proposals.length} stub="AI proposals">
         {proposals.length === 0
           ? <p className="md-empty-note">No proposals to review right now.</p>
-          : proposals.map((p, i) => (
-              <div className="md-prop" key={p.id || i}>
-                <div className="md-prop-text">{p.text}</div>
-                <div className="md-prop-meta">
-                  {[p.source && ('from ' + p.source), p.targetSection && ('→ ' + p.targetSection)].filter(Boolean).join(' · ')}
-                </div>
-                <div className="md-prop-act" aria-hidden="true">
-                  <button type="button" className="md-mini" disabled>Approve</button>
-                  <button type="button" className="md-mini" disabled>Deny</button>
-                </div>
-              </div>
-            ))}
+          : proposals.map(p => <ProposalCard key={p.id} p={p} onWrite={write} busy={busy} />)}
       </MdSec>
 
       {/* Other editable sections: inline edit, Complete (optional note), Delete. */}
