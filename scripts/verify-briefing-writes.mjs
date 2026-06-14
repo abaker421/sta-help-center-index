@@ -57,7 +57,7 @@ const raw = new DatabaseSync(":memory:");
 for (const m of [
   "0001_init.sql", "0002_indexes.sql", "0003_seed.sql", "0004_audit_indexes.sql",
   "0005_briefing_init.sql", "0006_briefing_indexes.sql", "0007_briefing_seed.sql",
-  "0008_briefing_columns.sql", "0009_briefing_reseed.sql",
+  "0008_briefing_columns.sql", "0009_briefing_reseed.sql", "0010_briefing_reseed.sql",
 ]) raw.exec(read(`migrations/${m}`));
 const db = d1(raw);
 

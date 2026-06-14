@@ -245,13 +245,8 @@ for (const r of parseTable(sectionBlock(md, "Completed (last 30 days)"))) {
   });
 }
 
-// Stable sort index within each section.
-const sectionCounters = {};
-for (const it of items) {
-  const n = sectionCounters[it.section] || 0;
-  it.sort = n;
-  sectionCounters[it.section] = n + 1;
-}
+// (Sort indices are assigned AFTER the PB2b.1 re-route below, since that moves the
+// stale/aging items into the carryover section and adds a calibration task.)
 
 // ---------------------------------------------------------------------------
 // calibration_snapshot - parse the snapshot table, derive a trend bullet list
@@ -291,53 +286,62 @@ let calibrationSnapshot = null;
 }
 
 // ---------------------------------------------------------------------------
-// needs_attention - stalest open items (7+ days, age-first) + a calibration line
+// PB2b.1 "Your Tasks" re-route: fold the former Needs Attention strip into the
+// carryover section as ordinary EDITABLE briefing_items (no separate read-only
+// strip, no new section/CHECK). The stalest open items (7+ days) are MOVED into
+// carryover (reclassified in place - not duplicated), and the synthetic
+// calibration-aging line becomes a carryover task. briefing_state.needs_attention
+// is left empty/unused (PB3's stale-detection will propose via the queue instead).
 // ---------------------------------------------------------------------------
-const needsAttention = [];
+const needsAttention = []; // intentionally empty now (column retained, unused)
 {
   const genMs = generated ? Date.parse(generated) : Date.now();
-  const FROM = { carryover: "Carryover", pending: "Pending", waiting_on: "Waiting on" };
+  // Source sections whose aged items graduate to "Your Tasks" (carryover).
+  const AGED_FROM = new Set(["carryover", "pending", "waiting_on"]);
   const aged = [];
-  // Aging is anchored to item_date (flagged / due / sent) on the dated sections.
   for (const it of items) {
-    const from = FROM[it.section];
-    if (!from) continue;
+    if (!AGED_FROM.has(it.section)) continue;
     if (it.item_date && /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(it.item_date)) {
-      aged.push({ it, date: it.item_date, from });
+      const days = Math.round((genMs - Date.parse(`${it.item_date}T00:00:00.000Z`)) / 86400000);
+      if (days >= 7) aged.push({ it, days });
     }
   }
-  for (const a of aged) {
-    a.days = Math.round((genMs - Date.parse(`${a.date}T00:00:00.000Z`)) / 86400000);
-  }
   aged
-    .filter((a) => a.days >= 7)
     .sort((x, y) => y.days - x.days)
     .slice(0, 8)
     .forEach((a) => {
-      const why = `${a.from} - ${a.days}d open (since ${a.date})`;
-      needsAttention.push({
-        text: a.it.text,
-        project: a.it.project || null,
-        age: `${a.days}d`,
-        // Age IS the signal and rides as text in the pill (never colour-alone);
-        // class is reinforcement: 30d+ reads as risk, 7-29d as watch.
-        statusClass: a.days >= 30 ? "risk" : "watch",
-        context: why,
-        meta: why, // back-compat
-      });
+      // Move it into carryover ("Your Tasks"); keep its columns + note the age in
+      // context so the "why" row still explains it. It stays fully editable (PB2b).
+      const ageNote = `Needs attention - ${a.days}d open`;
+      a.it.context = a.it.context ? `${ageNote}. ${a.it.context}` : ageNote;
+      a.it.section = "carryover";
     });
 
   if (calibrationSnapshot) {
-    const why = `${calibrationSnapshot.aging30} cases 30d+, ${calibrationSnapshot.aging90} cases 90d+; oldest ${calibrationSnapshot.oldest}`;
-    needsAttention.push({
+    items.push({
+      section: "carryover",
       text: "Support calibration aging",
+      meta: "",
+      item_date: calibrationSnapshot.asOf || null,
       project: "Support Calibration",
-      age: null,
-      statusClass: "risk",
-      context: why,
-      meta: why,
+      owner: null,
+      status_label: null,
+      status_class: null,
+      context: `${calibrationSnapshot.aging30} cases 30d+, ${calibrationSnapshot.aging90} cases 90d+; oldest ${calibrationSnapshot.oldest}`,
+      done: 0,
+      done_at: null,
+      source: "Calibration Snapshot",
     });
   }
+}
+
+// Stable sort index within each section (AFTER the re-route, so carryover/"Your
+// Tasks" is contiguous and the moved items get sane order).
+const sectionCounters = {};
+for (const it of items) {
+  const n = sectionCounters[it.section] || 0;
+  it.sort = n;
+  sectionCounters[it.section] = n + 1;
 }
 
 // ---------------------------------------------------------------------------
