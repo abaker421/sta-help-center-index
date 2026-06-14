@@ -6,7 +6,10 @@
   "type": "module",
   "scripts": {
     "seed": "node scripts/json-to-seed.js",
+    "briefing:input": "node scripts/agenda-to-briefing.mjs",
+    "seed:briefing": "node scripts/briefing-json-to-seed.js",
     "verify:local": "node scripts/verify-local.mjs",
+    "verify:briefing": "node scripts/verify-briefing.mjs",
     "verify:writes": "node scripts/verify-writes.mjs",
     "verify:identity": "node scripts/verify-identity.mjs",
     "migrate:local": "wrangler d1 migrations apply sta-tracker --local",
