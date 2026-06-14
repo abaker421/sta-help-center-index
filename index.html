@@ -174,19 +174,20 @@ textarea.ef-ctl{min-height:44px;resize:vertical;line-height:1.4}
 .hdr-myday-btn:hover{border-color:#6bc04b !important;color:#fff !important}
 .hdr-myday-btn.active{background:#6bc04b !important;border-color:#6bc04b !important;color:#10261a !important}
 .myday-view{flex:1;overflow-y:auto;padding:28px 48px 80px;scrollbar-width:thin;scrollbar-color:#bbb #fff;background:#e7ecf2}
+.md-wrap{max-width:840px;margin:0 auto}
 .md-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .md-readonly{display:inline-block;font-size:7.5pt;font-weight:700;background:#e6eef6;color:#0a4f7a;border-radius:999px;padding:2px 10px;margin-left:8px;vertical-align:middle}
 .md-kpis{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 20px}
 .md-kpi{flex:1 1 130px;background:#fff;border:1px solid #cdd6e3;border-radius:8px;padding:10px 13px;box-shadow:0 1px 3px rgba(16,24,40,.06)}
 .md-kpi b{display:block;font-size:18pt;color:#006098;font-variant-numeric:tabular-nums;line-height:1.1}
-.md-kpi span{font-size:7.5pt;color:#6b7a90;text-transform:uppercase;letter-spacing:.6px}
-.md-section{margin-bottom:10px}
+.md-kpi span{font-size:7.5pt;color:#5a6573;text-transform:uppercase;letter-spacing:.6px}
+.md-section{margin-bottom:28px}
 .md-card{background:#fff;border:1px solid #cdd6e3;border-radius:10px;box-shadow:0 1px 3px rgba(16,24,40,.06);margin-bottom:10px;padding:12px 14px}
 .md-check{display:flex;gap:10px;align-items:flex-start}
 .md-check input{margin-top:3px;flex-shrink:0;cursor:default;accent-color:#6bc04b}
 .md-check-body{display:flex;flex-direction:column;gap:2px}
 .md-check-text{font-size:10pt;color:#1a2330}
-.md-meta{font-size:8.5pt;color:#6b7a90}
+.md-meta{font-size:8.5pt;color:#64748b}
 .md-done .md-check-text{text-decoration:line-through;color:#8a8d8e}
 .md-donestamp{display:inline-block;font-size:7pt;font-weight:700;background:#e3f3ea;color:#1f6b3b;border-radius:999px;padding:1px 7px;margin-left:6px;vertical-align:middle;font-variant-numeric:tabular-nums}
 .md-title-card .md-title-top{display:flex;gap:10px;align-items:baseline}
@@ -195,14 +196,17 @@ textarea.ef-ctl{min-height:44px;resize:vertical;line-height:1.4}
 .md-needs ul{margin:0;padding-left:18px}
 .md-needs li{font-size:9.5pt;color:#5a4a10;margin:5px 0}
 .md-needs li .md-meta{color:#8a6a20;display:block}
-.md-cal-trend{background:#eef7ea;border-left:4px solid #6bc04b;border-radius:6px;padding:8px 12px;margin-bottom:10px}
-.md-cal-trend ul{margin:0;padding-left:18px}
-.md-cal-trend li{font-size:9pt;color:#243240;margin:2px 0;font-variant-numeric:tabular-nums}
-.md-cal-table{width:100%;border-collapse:collapse;font-size:8.5pt}
-.md-cal-table th{text-align:left;background:#006098;color:#fff;padding:5px 8px;font-weight:600}
-.md-cal-table td{padding:5px 8px;border-bottom:1px solid #e1e6ee;color:#333;font-variant-numeric:tabular-nums}
-.md-personal{background:#f7f9fc;border:1px dashed #cdd6e3;border-radius:8px;padding:8px 12px;margin:-6px 0 12px}
-.md-muted{font-size:9pt;color:#8a8d8e;font-style:italic;margin-bottom:10px}
+.md-attn-ico{margin-right:7px}
+.md-sit{padding:11px 14px}
+.md-sit-name{font-size:10pt;font-weight:700;color:#1a2330;line-height:1.35}
+.md-sit-summary{font-size:9pt;color:#5a6573;line-height:1.5;margin-top:3px}
+.md-sit-meta{font-size:8pt;color:#64748b;margin-top:6px}
+.md-projlink-sub{font-size:9pt;color:#5a6573;margin:0 0 12px;line-height:1.5}
+.md-viewall{display:inline-flex;align-items:center;gap:7px;min-height:24px;padding:9px 16px;border-radius:8px;border:1.5px solid #006098;background:#fff;color:#006098;font-family:'Roboto',Arial,sans-serif;font-size:9.5pt;font-weight:600;cursor:pointer;text-decoration:none;line-height:1.2}
+.md-viewall:hover{background:#006098;color:#fff}
+.md-viewall:focus-visible{outline:3px solid #6bc04b;outline-offset:2px}
+.md-viewall .md-arrow{font-size:12pt;line-height:1}
+.md-muted{font-size:9pt;color:#4b5563;font-style:italic;margin-bottom:10px}
 .md-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 40px;text-align:center}
 .md-empty-icon{font-size:40px;margin-bottom:14px}
 .md-empty-title{font-size:12pt;font-weight:700;color:#445063;margin-bottom:6px}
@@ -963,38 +967,7 @@ function MdCheckLine({ text, meta, done, doneAt }) {
   );
 }
 
-// Open Projects: reuse the read-only ProjectCard (What it is / Open items / Timeline
-// dropdown) for the shared project, then layer the user's personal note/timeline.
-// A ref with no shared match renders from its personal note alone (never invented).
-function MyDayProjectCard({ p }) {
-  if (!p.name) {
-    return (
-      <div className="proj-card"><div className="proj-card-body">
-        <div className="proj-top"><span className="proj-name">Project (no tracker match)</span></div>
-        {p.personalNote && <p className="proj-statusline">{p.personalNote}</p>}
-      </div></div>
-    );
-  }
-  const hasPersonal = !!p.personalNote || (Array.isArray(p.personalTimeline) && p.personalTimeline.length > 0);
-  return (
-    <>
-      <ProjectCard p={p} canEdit={false} />
-      {hasPersonal && (
-        <div className="md-personal">
-          {p.personalNote && <><span className="pd-lbl">My note</span><div className="pd-row">{p.personalNote}</div></>}
-          {Array.isArray(p.personalTimeline) && p.personalTimeline.length > 0 && <>
-            <span className="pd-lbl">My timeline</span>
-            {p.personalTimeline.map((t, i) => (
-              <div className="pd-row" key={i}><span className="pd-when">{t.when}</span><span>{t.note}</span></div>
-            ))}
-          </>}
-        </div>
-      )}
-    </>
-  );
-}
-
-function MyDayView() {
+function MyDayView({ onSelect }) {
   const [data, setData] = useState(null);
   const [status, setStatus] = useState('loading'); // loading | idle | error
 
@@ -1038,7 +1011,6 @@ function MyDayView() {
   const projs = b.openProjects || [];
   const meetings = b.todaysMeetings || [];
   const needs = b.needsAttention || [];
-  const cal = b.calibrationSnapshot;
 
   const isEmpty = !b.generated && projs.length === 0 &&
     [carry, pending, waiting, situations, completed].every(a => a.length === 0);
@@ -1057,6 +1029,7 @@ function MyDayView() {
 
   return (
     <div className="myday-view">
+      <div className="md-wrap">
       <div className="md-head">
         <div>
           <h1 className="pv-h1">My Day<span className="md-readonly">Read-only</span></h1>
@@ -1078,7 +1051,19 @@ function MyDayView() {
         <div className="md-kpi"><b>{carry.length}</b><span>Carryover</span></div>
       </div>
 
-      <MdSection title="Meetings">
+      {needs.length > 0 && (
+        <MdSection title={<><span className="md-attn-ico" aria-hidden="true">⚠</span>Needs Attention</>}>
+          <div className="md-needs" role="note" aria-label="Items that need your attention">
+            <ul>
+              {needs.map((nA, i) => (
+                <li key={i}>{nA.text}{nA.meta && <span className="md-meta">{nA.meta}</span>}</li>
+              ))}
+            </ul>
+          </div>
+        </MdSection>
+      )}
+
+      <MdSection title="Today's Meetings">
         {meetings.length === 0
           ? <div className="md-muted">No meetings on today's snapshot.</div>
           : meetings.map((m, i) => (
@@ -1108,37 +1093,6 @@ function MyDayView() {
             ))}
       </MdSection>
 
-      {cal && (
-        <MdSection title="Calibration">
-          <div className="md-card">
-            {Array.isArray(cal.trend) && cal.trend.length > 0 && (
-              <div className="md-cal-trend"><ul>{cal.trend.map((t, i) => <li key={i}>{t}</li>)}</ul></div>
-            )}
-            {Array.isArray(cal.rows) && cal.rows.length > 0 && (
-              <table className="md-cal-table">
-                <thead><tr>
-                  <th>Date</th><th>Open</th><th>New</th><th>Closed</th><th>30d+</th><th>90d+</th><th>Oldest</th>
-                </tr></thead>
-                <tbody>
-                  {cal.rows.map((r, i) => (
-                    <tr key={i}>
-                      <td>{r.date}</td><td>{r.open}</td><td>{r.new}</td><td>{r.closed}</td>
-                      <td>{r.aging30}</td><td>{r.aging90}</td><td>{r.oldest}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </MdSection>
-      )}
-
-      <MdSection title="Open Projects">
-        {projs.length === 0
-          ? <div className="md-muted">No open projects.</div>
-          : projs.map((p, i) => <MyDayProjectCard key={p.refId || p.id || i} p={p} />)}
-      </MdSection>
-
       <MdSection title="Pending Your Review">
         {pending.length === 0
           ? <div className="md-muted">Nothing pending your review.</div>
@@ -1153,26 +1107,28 @@ function MyDayView() {
             ))}
       </MdSection>
 
-      {needs.length > 0 && (
-        <MdSection title="Needs Attention">
-          <div className="md-needs">
-            <ul>
-              {needs.map((nA, i) => (
-                <li key={i}>{nA.text}{nA.meta && <span className="md-meta">{nA.meta}</span>}</li>
-              ))}
-            </ul>
-          </div>
-        </MdSection>
-      )}
-
       <MdSection title="Customer Situations">
         {situations.length === 0
           ? <div className="md-muted">No ongoing customer situations.</div>
-          : situations.map(it => (
-              <div className="md-card" key={it.id}>
-                <MdCheckLine text={it.text} meta={it.meta} done={it.done} />
-              </div>
-            ))}
+          : situations.map(it => {
+              const parts = (it.text || '').split(' - ');
+              const sitName = parts[0];
+              const sitSummary = parts.slice(1).join(' - ');
+              return (
+                <div className="md-card md-sit" key={it.id}>
+                  <div className="md-sit-name">{sitName}</div>
+                  {sitSummary && <div className="md-sit-summary">{sitSummary}</div>}
+                  {it.meta && <div className="md-sit-meta">{it.meta}</div>}
+                </div>
+              );
+            })}
+      </MdSection>
+
+      <MdSection title="Open Projects">
+        <p className="md-projlink-sub">Your full project list lives on the Projects tab - one source of truth, no duplicate copy here.</p>
+        <button type="button" className="md-viewall" onClick={() => onSelect(PROJECTS_TAB)}>
+          View All Projects <span className="md-arrow" aria-hidden="true">→</span>
+        </button>
       </MdSection>
 
       {completed.length > 0 && (
@@ -1192,7 +1148,8 @@ function MyDayView() {
         </MdSection>
       )}
 
-      <div style={{ height: '50px' }} />
+      <div style={{ height: '40px' }} />
+      </div>
     </div>
   );
 }
@@ -1266,7 +1223,7 @@ function App() {
         installAvailable={!!installPrompt} onInstall={handleInstall} />
       <TabBar active={tab} onSelect={handleSelect} favCount={favs.size} />
       {tab === MYDAY_TAB
-        ? <MyDayView />
+        ? <MyDayView onSelect={handleSelect} />
         : tab === PROJECTS_TAB
         ? <ProjectsView data={PROJECT_DATA} />
         : tab === FAVS_TAB
