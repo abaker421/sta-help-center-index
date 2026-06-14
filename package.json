@@ -11,6 +11,7 @@
     "verify:local": "node scripts/verify-local.mjs",
     "verify:briefing": "node scripts/verify-briefing.mjs",
     "verify:writes": "node scripts/verify-writes.mjs",
+    "verify:briefing-writes": "node scripts/verify-briefing-writes.mjs",
     "verify:identity": "node scripts/verify-identity.mjs",
     "migrate:local": "wrangler d1 migrations apply sta-tracker --local",
     "migrate:remote": "wrangler d1 migrations apply sta-tracker --remote",

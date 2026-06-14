@@ -248,6 +248,33 @@ textarea.ef-ctl{min-height:44px;resize:vertical;line-height:1.4}
 .md-mini{font-family:'Roboto',Arial,sans-serif;font-size:8.5pt;font-weight:600;border-radius:7px;padding:5px 12px;min-height:24px;border:1px solid #d8e0e8;background:#f4f7fa;color:#7c8a99;cursor:not-allowed}
 .md-prop-note{font-size:8.5pt;color:#5a6b7b;font-style:italic;margin:0 0 10px}
 .md-empty-note{color:#5a6b7b;font-size:9.5pt;font-style:italic;margin:0}
+/* ---- PB2b: in-tab editing (complete-toggle, inline edit, reclassify, add, delete, 409) ---- */
+.md-chk{width:16px;height:16px;accent-color:#6bc04b;cursor:pointer;margin-top:2px}
+.md-chk:disabled{cursor:default}
+.md-done-text{text-decoration:line-through;color:#7c8a99}
+.md-rowact{display:flex;gap:6px;white-space:nowrap}
+.md-rowbtn{font-family:'Roboto',Arial,sans-serif;font-size:8.5pt;font-weight:600;border-radius:7px;padding:5px 10px;min-height:24px;border:1px solid #cdd6e3;background:#fff;color:#006098;cursor:pointer}
+.md-rowbtn:hover{background:#f0f6fb}
+.md-rowbtn-danger{color:#b42318;border-color:#e7c3bf}
+.md-rowbtn-danger:hover{background:#fef3f2}
+.md-addbtn{display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-family:'Roboto',Arial,sans-serif;font-size:8.5pt;font-weight:600;border-radius:8px;padding:6px 12px;min-height:24px;border:1px dashed #9bb4c9;background:#f7fafc;color:#006098;cursor:pointer}
+.md-addbtn:hover{background:#eef6fc;border-color:#006098}
+.md-editform{display:flex;flex-direction:column;gap:8px;background:#f7fafc;border:1px solid #d8e0e8;border-radius:8px;padding:12px}
+.md-editrow{display:flex;flex-wrap:wrap;gap:10px}
+.md-editfield{display:flex;flex-direction:column;gap:3px;flex:1 1 160px}
+.md-editfield.wide{flex-basis:100%}
+.md-editfield label{font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#5a6b7b}
+.md-editfield input,.md-editfield select,.md-editfield textarea{font-family:'Roboto',Arial,sans-serif;font-size:9.5pt;color:#1f2933;border:1px solid #cdd6e3;border-radius:6px;padding:6px 8px;background:#fff}
+.md-editfield textarea{min-height:54px;resize:vertical;line-height:1.45}
+.md-editfield input:focus,.md-editfield select:focus,.md-editfield textarea:focus{outline:2px solid #006098;outline-offset:0;border-color:#006098}
+.md-editactions{display:flex;gap:8px;align-items:center}
+.md-save{font-family:'Roboto',Arial,sans-serif;font-size:9pt;font-weight:600;border-radius:8px;padding:7px 16px;min-height:24px;border:1.5px solid #006098;background:#006098;color:#fff;cursor:pointer}
+.md-save:disabled{opacity:.6;cursor:default}
+.md-cancel{font-family:'Roboto',Arial,sans-serif;font-size:9pt;font-weight:600;border-radius:8px;padding:7px 16px;min-height:24px;border:1.5px solid #cdd6e3;background:#fff;color:#5a6b7b;cursor:pointer}
+.md-conflict{border:1.5px solid #d99a00;background:#fff8e6;border-radius:10px;padding:12px 14px;margin-bottom:14px;color:#5a4a10;font-size:9.5pt}
+.md-conflict b{color:#7a4a00}
+.md-conflict-act{margin-top:8px;display:flex;gap:8px}
+.md-tbl td.md-actcell{width:1%;white-space:nowrap}
 .md-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 40px;text-align:center}
 .md-empty-icon{font-size:40px;margin-bottom:14px}
 .md-empty-title{font-size:12pt;font-weight:700;color:#445063;margin-bottom:6px}
@@ -1044,9 +1071,180 @@ const SAMPLE_PROPOSALS = [
   { id: 'sample-3', text: 'Mark complete: Watertown HS + Green Hill HS ID resolved', source: '6/11 Wilson County ID', targetSection: 'Completed' },
 ];
 
+// PB2b in-tab editing ---------------------------------------------------------
+// Column + edit-field spec per EDITABLE section (mirrors the server BRIEFING_EDITABLE_
+// SECTIONS). `pill` renders the status pill cell; `fmt` shortens an ISO date; `main`
+// is the cell that strikes through when done.
+const BR_SECTION_DEFS = {
+  carryover: { title: 'Carryover',
+    cols: [{ key:'itemDate', header:'Date', cls:'md-dt', fmt:true }, { key:'project', header:'Project', cls:'md-proj' }, { key:'text', header:'Item', main:true }],
+    why: 'Why carried', edit: ['text','project','item_date','context'] },
+  customer_situation: { title: 'Customer Situations',
+    cols: [{ key:'text', header:'Customer', cls:'md-cust', main:true }, { key:'statusLabel', header:'Status', pill:true }, { key:'owner', header:'Owner' }],
+    why: 'Situation', edit: ['text','owner','status','context'] },
+  waiting_on: { title: 'Waiting On Others',
+    cols: [{ key:'text', header:'Item', main:true }, { key:'owner', header:'Sent to' }, { key:'itemDate', header:'Date', cls:'md-dt', fmt:true }, { key:'project', header:'Project', cls:'md-proj' }],
+    why: 'Context', edit: ['text','owner','item_date','project','context'] },
+  pending: { title: 'Pending Your Action',
+    cols: [{ key:'text', header:'Item', main:true }, { key:'owner', header:'From' }, { key:'itemDate', header:'Date', cls:'md-dt', fmt:true }],
+    why: 'Context', edit: ['text','owner','item_date','context'] },
+};
+const BR_RECLASSIFY = [
+  { v:'carryover', label:'Carryover' }, { v:'pending', label:'Pending Your Action' },
+  { v:'waiting_on', label:'Waiting On Others' }, { v:'customer_situation', label:'Customer Situations' },
+];
+const BR_STATUS_OPTS = [
+  { v:'', label:'(none)' }, { v:'risk', label:'At risk' }, { v:'watch', label:'Watch' }, { v:'ok', label:'Resolved' },
+];
+const BR_STATUS_LABEL = { risk:'At risk', watch:'Watch', ok:'Resolved' };
+
+function brEditLabel(def, key) {
+  if (key === 'text') return (def.cols.find(c => c.key === 'text') || {}).header || 'Text';
+  if (key === 'owner') return (def.cols.find(c => c.key === 'owner') || {}).header || 'Owner';
+  if (key === 'item_date') return 'Date (YYYY-MM-DD)';
+  if (key === 'project') return 'Project';
+  if (key === 'context') return def.why;
+  if (key === 'status') return 'Status';
+  return key;
+}
+
+// Inline edit / add form for one briefing row. row=null => add mode (no version,
+// no reclassify select). Calls onSave(fields) with the whitelisted field set.
+function BriefingEditForm({ sectionKey, row, onSave, onCancel, busy }) {
+  const def = BR_SECTION_DEFS[sectionKey];
+  const seed = {};
+  for (const f of def.edit) {
+    if (f === 'status') seed.status = (row && row.statusClass) || '';
+    else if (f === 'item_date') seed.item_date = (row && row.itemDate) || '';
+    else seed[f] = (row && row[f]) || '';
+  }
+  const [form, setForm] = useState(seed);
+  const [section, setSection] = useState(sectionKey);
+  const set = (k, v) => setForm(s => ({ ...s, [k]: v }));
+
+  const submit = () => {
+    const fields = {};
+    for (const f of def.edit) {
+      if (f === 'status') { fields.status_class = form.status || null; fields.status_label = form.status ? BR_STATUS_LABEL[form.status] : null; }
+      else fields[f] = (form[f] === '' ? null : form[f]);
+    }
+    if ((form.text || '').trim() === '') return; // text is required
+    fields.text = form.text.trim();
+    if (row && section !== sectionKey) fields.section = section; // reclassify (edit only)
+    onSave(fields);
+  };
+
+  return (
+    <div className="md-editform">
+      <div className="md-editrow">
+        {def.edit.map(f => (
+          <div className={"md-editfield" + (f === 'text' || f === 'context' ? ' wide' : '')} key={f}>
+            <label>{brEditLabel(def, f)}</label>
+            {f === 'context'
+              ? <textarea value={form.context || ''} disabled={busy} onChange={e => set('context', e.target.value)} />
+              : f === 'status'
+                ? <select value={form.status || ''} disabled={busy} onChange={e => set('status', e.target.value)}>
+                    {BR_STATUS_OPTS.map(o => <option key={o.v} value={o.v}>{o.label}</option>)}
+                  </select>
+                : <input type="text" value={form[f] || ''} disabled={busy}
+                    placeholder={f === 'item_date' ? '2026-06-14' : ''}
+                    onChange={e => set(f, e.target.value)} />}
+          </div>
+        ))}
+        {row && (
+          <div className="md-editfield">
+            <label>Section (reclassify)</label>
+            <select value={section} disabled={busy} onChange={e => setSection(e.target.value)}>
+              {BR_RECLASSIFY.map(o => <option key={o.v} value={o.v}>{o.label}</option>)}
+            </select>
+          </div>
+        )}
+      </div>
+      <div className="md-editactions">
+        <button type="button" className="md-save" disabled={busy} onClick={submit}>{row ? 'Save' : 'Add'}</button>
+        <button type="button" className="md-cancel" disabled={busy} onClick={onCancel}>Cancel</button>
+      </div>
+    </div>
+  );
+}
+
+// One editable section table: complete-toggle, inline edit, reclassify, soft-delete,
+// add-item. All writes go through onWrite (which re-fetches on success / surfaces 409).
+function BriefingTable({ sectionKey, rows, onWrite, busy }) {
+  const def = BR_SECTION_DEFS[sectionKey];
+  const [editId, setEditId] = useState(null);
+  const [adding, setAdding] = useState(false);
+  const ncols = def.cols.length + 2; // leading checkbox + trailing actions
+
+  const patch = (it, body) => onWrite('PATCH', '/api/briefing/items/' + it.id, { expected_version: it.version, ...body });
+
+  return (
+    <MdSec title={def.title} count={rows.length}>
+      <table className="md-tbl">
+        <thead><tr>
+          <th aria-label="Done"></th>
+          {def.cols.map(c => <th key={c.key}>{c.header}</th>)}
+          <th aria-label="Actions"></th>
+        </tr></thead>
+        <tbody>
+          {rows.length === 0 && !adding && (
+            <tr><td colSpan={ncols} className="md-note-cell">Nothing here right now.</td></tr>
+          )}
+          {rows.map(it => (
+            <React.Fragment key={it.id}>
+              {editId === it.id ? (
+                <tr><td colSpan={ncols}>
+                  <BriefingEditForm sectionKey={sectionKey} row={it} busy={busy}
+                    onCancel={() => setEditId(null)}
+                    onSave={async (fields) => { const r = await patch(it, fields); if (r.ok) setEditId(null); }} />
+                </td></tr>
+              ) : (
+                <tr>
+                  <td><input type="checkbox" className="md-chk" checked={!!it.done} disabled={busy}
+                        aria-label={it.done ? 'Mark not done' : 'Mark done'}
+                        onChange={() => patch(it, { done: it.done ? 0 : 1 })} /></td>
+                  {def.cols.map(c => (
+                    <td key={c.key} className={c.cls || ''}>
+                      {c.pill
+                        ? (it.statusLabel ? <MdPill cls={it.statusClass}>{it.statusLabel}</MdPill> : '-')
+                        : (() => {
+                            const val = c.fmt ? mdDate(it[c.key]) : (it[c.key] || (c.main ? '' : '-'));
+                            return c.main ? <span className={it.done ? 'md-done-text' : ''}>{val}</span> : val;
+                          })()}
+                    </td>
+                  ))}
+                  <td className="md-actcell"><div className="md-rowact">
+                    <button type="button" className="md-rowbtn" disabled={busy} onClick={() => { setAdding(false); setEditId(it.id); }}>Edit</button>
+                    <button type="button" className="md-rowbtn md-rowbtn-danger" disabled={busy}
+                      onClick={() => { if (window.confirm('Delete this item? (soft-delete, recoverable in the data)')) onWrite('DELETE', '/api/briefing/items/' + it.id, { expected_version: it.version }); }}>Delete</button>
+                  </div></td>
+                </tr>
+              )}
+              {it.context && editId !== it.id && (
+                <tr><td colSpan={ncols}><MdCtx summary={def.why}>{it.context}</MdCtx></td></tr>
+              )}
+            </React.Fragment>
+          ))}
+          {adding && (
+            <tr><td colSpan={ncols}>
+              <BriefingEditForm sectionKey={sectionKey} row={null} busy={busy}
+                onCancel={() => setAdding(false)}
+                onSave={async (fields) => { const r = await onWrite('POST', '/api/briefing/items', { section: sectionKey, ...fields }); if (r.ok) setAdding(false); }} />
+            </td></tr>
+          )}
+        </tbody>
+      </table>
+      {!adding && <button type="button" className="md-addbtn" disabled={busy} onClick={() => { setEditId(null); setAdding(true); }}>+ Add item</button>}
+    </MdSec>
+  );
+}
+
 function MyDayView({ onSelect }) {
   const [data, setData] = useState(null);
   const [status, setStatus] = useState('loading'); // loading | idle | error
+  const [busy, setBusy] = useState(false);         // a write is in flight
+  const [conflict, setConflict] = useState(null);  // 409 payload {current_version, current}
+  const [writeErr, setWriteErr] = useState(null);  // non-409 write failure message
 
   const load = useCallback(() => {
     setStatus('loading');
@@ -1056,6 +1254,19 @@ function MyDayView({ onSelect }) {
       .catch(() => { setStatus('error'); });
   }, []);
   useEffect(() => { load(); }, [load]);
+
+  // Every briefing write goes through here: send expected_version, then on 409 surface
+  // a reconcile banner (NEVER auto-overwrite), on success clear banners + re-fetch, on
+  // any other failure surface a dismissible error. Returns {ok,status,data}.
+  const write = useCallback(async (method, path, body) => {
+    setBusy(true);
+    const r = await apiWrite(method, path, body);
+    setBusy(false);
+    if (r.status === 409) { setConflict(r.data || {}); return r; }
+    if (r.ok) { setConflict(null); setWriteErr(null); await load(); return r; }
+    setWriteErr((r.data && r.data.error) || ('write failed (HTTP ' + r.status + ')'));
+    return r;
+  }, [load]);
 
   const RefreshBtn = (
     <button type="button" onClick={load} disabled={status === 'loading'}
@@ -1122,10 +1333,27 @@ function MyDayView({ onSelect }) {
           </div>
         </div>
         <div className="md-hero-right">
-          <span className="md-readonly">Read-only</span>
           {RefreshBtn}
         </div>
       </div>
+
+      {conflict && (
+        <div className="md-conflict" role="alert">
+          <b>This item changed since you loaded it.</b> Your edit was not applied, so a newer version is not overwritten. Reload the latest, then re-apply your change.
+          <div className="md-conflict-act">
+            <button type="button" className="md-save" onClick={() => { setConflict(null); load(); }}>Reload latest</button>
+            <button type="button" className="md-cancel" onClick={() => setConflict(null)}>Dismiss</button>
+          </div>
+        </div>
+      )}
+      {writeErr && (
+        <div className="md-conflict" role="alert" style={{ borderColor: '#e7c3bf', background: '#fef3f2', color: '#7a1d12' }}>
+          <b>Could not save.</b> {writeErr}
+          <div className="md-conflict-act">
+            <button type="button" className="md-cancel" onClick={() => setWriteErr(null)}>Dismiss</button>
+          </div>
+        </div>
+      )}
 
       {/* Needs Attention - compact warn alert strip pinned at the top (age pill + bold project). */}
       {needs.length > 0 && (
@@ -1165,98 +1393,11 @@ function MyDayView({ onSelect }) {
             ))}
       </MdSec>
 
-      {/* Carryover - Date | Project | Item, with an expandable "why carried" row. */}
-      <MdSec title="Carryover" count={carry.length}>
-        {carry.length === 0
-          ? <div className="md-muted">Nothing carried over.</div>
-          : (
-            <table className="md-tbl">
-              <thead><tr><th>Date</th><th>Project</th><th>Item</th></tr></thead>
-              <tbody>
-                {carry.map(it => (
-                  <React.Fragment key={it.id}>
-                    <tr>
-                      <td className="md-dt">{mdDate(it.itemDate)}</td>
-                      <td className="md-proj">{it.project || '-'}</td>
-                      <td>{it.text}</td>
-                    </tr>
-                    {it.context && <tr><td colSpan={3}><MdCtx summary="Why carried">{it.context}</MdCtx></td></tr>}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          )}
-      </MdSec>
-
-      {/* Customer Situations - name bold + status pill; full situation in the expandable. */}
-      <MdSec title="Customer Situations" count={situations.length}>
-        {situations.length === 0
-          ? <div className="md-muted">No ongoing customer situations.</div>
-          : (
-            <table className="md-tbl">
-              <thead><tr><th>Customer</th><th>Status</th><th>Owner</th></tr></thead>
-              <tbody>
-                {situations.map(it => (
-                  <React.Fragment key={it.id}>
-                    <tr>
-                      <td className="md-cust">{it.text}</td>
-                      <td>{it.statusLabel ? <MdPill cls={it.statusClass}>{it.statusLabel}</MdPill> : '-'}</td>
-                      <td>{it.owner || '-'}</td>
-                    </tr>
-                    {it.context && <tr><td colSpan={3}><MdCtx summary="Situation">{it.context}</MdCtx></td></tr>}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          )}
-      </MdSec>
-
-      {/* Waiting On Others - Item | Sent to | Date | Project, with expandable context. */}
-      <MdSec title="Waiting On Others" count={waiting.length}>
-        {waiting.length === 0
-          ? <div className="md-muted">Not waiting on anyone right now.</div>
-          : (
-            <table className="md-tbl">
-              <thead><tr><th>Item</th><th>Sent to</th><th>Date</th><th>Project</th></tr></thead>
-              <tbody>
-                {waiting.map(it => (
-                  <React.Fragment key={it.id}>
-                    <tr>
-                      <td>{it.text}</td>
-                      <td>{it.owner || '-'}</td>
-                      <td className="md-dt">{mdDate(it.itemDate)}</td>
-                      <td className="md-proj">{it.project || '-'}</td>
-                    </tr>
-                    {it.context && <tr><td colSpan={4}><MdCtx summary="Context">{it.context}</MdCtx></td></tr>}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          )}
-      </MdSec>
-
-      {/* Pending Your Action - Item | From | Date, with expandable context. */}
-      <MdSec title="Pending Your Action" count={pending.length}>
-        {pending.length === 0
-          ? <div className="md-muted">Nothing pending your action.</div>
-          : (
-            <table className="md-tbl">
-              <thead><tr><th>Item</th><th>From</th><th>Date</th></tr></thead>
-              <tbody>
-                {pending.map(it => (
-                  <React.Fragment key={it.id}>
-                    <tr>
-                      <td>{it.text}</td>
-                      <td>{it.owner || '-'}</td>
-                      <td className="md-dt">{mdDate(it.itemDate)}</td>
-                    </tr>
-                    {it.context && <tr><td colSpan={3}><MdCtx summary="Context">{it.context}</MdCtx></td></tr>}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          )}
-      </MdSec>
+      {/* Editable sections (PB2b): complete-toggle, inline edit, reclassify, add, soft-delete. */}
+      <BriefingTable sectionKey="carryover" rows={carry} onWrite={write} busy={busy} />
+      <BriefingTable sectionKey="customer_situation" rows={situations} onWrite={write} busy={busy} />
+      <BriefingTable sectionKey="waiting_on" rows={waiting} onWrite={write} busy={busy} />
+      <BriefingTable sectionKey="pending" rows={pending} onWrite={write} busy={busy} />
 
       {/* Open Projects - single tab-switch link; the Projects tab is the one source. */}
       <MdSec title="Open Projects">
@@ -1271,12 +1412,15 @@ function MyDayView({ onSelect }) {
           <details className="md-ctx">
             <summary>Show {completed.length} recently closed</summary>
             <table className="md-tbl" style={{ marginTop: '8px' }}>
-              <thead><tr><th>Date</th><th>Item</th><th>Notes</th></tr></thead>
+              <thead><tr><th aria-label="Done"></th><th>Date</th><th>Item</th><th>Notes</th></tr></thead>
               <tbody>
                 {completed.map(it => (
                   <tr key={it.id}>
+                    <td><input type="checkbox" className="md-chk" checked={!!it.done} disabled={busy}
+                          aria-label={it.done ? 'Restore (mark not done)' : 'Mark done'}
+                          onChange={() => write('PATCH', '/api/briefing/items/' + it.id, { expected_version: it.version, done: it.done ? 0 : 1 })} /></td>
                     <td className="md-dt">{mdDate(it.itemDate || it.doneAt)}</td>
-                    <td>{it.text}</td>
+                    <td><span className={it.done ? 'md-done-text' : ''}>{it.text}</span></td>
                     <td className="md-note-cell">{it.context || ''}</td>
                   </tr>
                 ))}
