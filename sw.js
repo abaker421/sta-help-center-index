@@ -1,4 +1,4 @@
-const CACHE = 'sta-hc-20260614-pb2c';
+const CACHE = 'sta-hc-20260615-pb2b2';
 const PRECACHE = ['/', '/index.html', '/manifest.json',
   '/icons/icon-192.png', '/icons/icon-512.png'];
 
