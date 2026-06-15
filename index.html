@@ -284,16 +284,24 @@ textarea.ef-ctl{min-height:44px;resize:vertical;line-height:1.4}
 /* ---- PB2b.1: inline edit-in-place, Complete-with-note, rotating disclosure carets ---- */
 .md-rowbtn-primary{border-color:#6bc04b;background:#f1faec;color:#2f7d12}
 .md-rowbtn-primary:hover{background:#6bc04b;color:#10261a}
-.md-cellinput{width:100%;font-family:'Roboto',Arial,sans-serif;font-size:9.5pt;color:#1f2933;border:1px solid #9bb4c9;border-radius:6px;padding:5px 7px;background:#fff}
+/* PB2b.2: fixed column widths so a row renders identically in read + edit (the date
+   input / Product select can't reflow or grow the columns). The cell INPUTS fill their
+   fixed cell (box-sizing border-box, min-width:0 so the native date picker shrinks). */
+.md-tbl-fixed{table-layout:fixed}
+.md-tbl-fixed th,.md-tbl-fixed td{overflow:hidden;text-overflow:ellipsis}
+.md-tbl-fixed td.md-actcell{overflow:visible}
+.md-cellinput{width:100%;box-sizing:border-box;min-width:0;font-family:'Roboto',Arial,sans-serif;font-size:9.5pt;color:#1f2933;border:1px solid #9bb4c9;border-radius:6px;padding:4px 6px;background:#fff}
 .md-cellinput:focus{outline:2px solid #006098;outline-offset:0;border-color:#006098}
-tr.md-editing td{background:#f7fafc;border-bottom:none;vertical-align:top}
+tr.md-editing td{background:#f7fafc;border-bottom:none;vertical-align:middle}
+/* Secondary fields (why/context + reclassify) ride in ONE thin full-width sub-line so
+   the DATE/PRODUCT/ITEM columns above keep identical sizing. */
 tr.md-editing-extra td{background:#f7fafc;padding-top:0}
-.md-editextra{display:flex;flex-wrap:wrap;gap:12px;padding:2px 0 4px}
-.md-editextra label{display:flex;flex-direction:column;gap:3px;flex:1 1 220px}
-.md-editextra label.wide{flex-basis:100%}
-.md-editextra label span{font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#5a6b7b}
-.md-editextra textarea,.md-editextra select{font-family:'Roboto',Arial,sans-serif;font-size:9.5pt;color:#1f2933;border:1px solid #9bb4c9;border-radius:6px;padding:6px 8px;background:#fff}
-.md-editextra textarea{min-height:48px;resize:vertical;line-height:1.45}
+.md-editextra{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:2px 0 4px}
+.md-editextra label{display:flex;align-items:center;gap:6px;min-width:0}
+.md-editextra label.grow{flex:1 1 320px}
+.md-editextra label span{flex:0 0 auto;font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#5a6b7b}
+.md-editextra input,.md-editextra select{font-family:'Roboto',Arial,sans-serif;font-size:9pt;color:#1f2933;border:1px solid #9bb4c9;border-radius:6px;padding:5px 7px;background:#fff;min-width:0}
+.md-editextra input{flex:1 1 auto;width:100%}
 .md-complete-note{display:flex;flex-direction:column;gap:8px;background:#f1faec;border:1px solid #cde8bf;border-radius:8px;padding:10px 12px}
 .md-complete-note label{display:flex;flex-direction:column;gap:3px}
 .md-complete-note label span{font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#3f6b22}
@@ -1162,20 +1170,27 @@ function ProposalCard({ p, onWrite, busy }) {
 // Column + edit-field spec per EDITABLE section (mirrors the server BRIEFING_EDITABLE_
 // SECTIONS). `pill` renders the status pill cell; `fmt` shortens an ISO date; `main`
 // is the cell that strikes through when done. PB2b.1: carryover is now "Your Tasks".
+// PB2b.2: every non-main column has a fixed width `w` so the row renders identically
+// in read + edit (a colgroup applies them). The `text`/main column takes the rest.
+// `project` is now "Product" (a pick list; reuses the project column). The trailing
+// actions column has its own fixed width (BR_ACT_W).
+const BR_ACT_W = '208px';
 const BR_SECTION_DEFS = {
   carryover: { title: 'Your Tasks',
-    cols: [{ key:'itemDate', header:'Date', cls:'md-dt', fmt:true }, { key:'project', header:'Project', cls:'md-proj' }, { key:'text', header:'Item', main:true }],
+    cols: [{ key:'itemDate', header:'Date', cls:'md-dt', fmt:true, w:'120px' }, { key:'project', header:'Product', cls:'md-proj', w:'150px' }, { key:'text', header:'Item', main:true }],
     why: 'Why / context', edit: ['text','project','item_date','context'] },
   customer_situation: { title: 'Customer Situations',
-    cols: [{ key:'text', header:'Customer', cls:'md-cust', main:true }, { key:'statusLabel', header:'Status', pill:true }, { key:'owner', header:'Owner' }],
+    cols: [{ key:'text', header:'Customer', cls:'md-cust', main:true }, { key:'statusLabel', header:'Status', pill:true, w:'118px' }, { key:'owner', header:'Owner', w:'140px' }],
     why: 'Situation', edit: ['text','status','owner','context'] },
   waiting_on: { title: 'Waiting On Others',
-    cols: [{ key:'text', header:'Item', main:true }, { key:'owner', header:'Sent to' }, { key:'itemDate', header:'Date', cls:'md-dt', fmt:true }, { key:'project', header:'Project', cls:'md-proj' }],
+    cols: [{ key:'text', header:'Item', main:true }, { key:'owner', header:'Sent to', w:'140px' }, { key:'itemDate', header:'Date', cls:'md-dt', fmt:true, w:'120px' }, { key:'project', header:'Product', cls:'md-proj', w:'150px' }],
     why: 'Context', edit: ['text','owner','item_date','project','context'] },
   pending: { title: 'Pending Your Action',
-    cols: [{ key:'text', header:'Item', main:true }, { key:'owner', header:'From' }, { key:'itemDate', header:'Date', cls:'md-dt', fmt:true }],
+    cols: [{ key:'text', header:'Item', main:true }, { key:'owner', header:'From', w:'140px' }, { key:'itemDate', header:'Date', cls:'md-dt', fmt:true, w:'120px' }],
     why: 'Context', edit: ['text','owner','item_date','context'] },
 };
+// The canonical Product pick list (matches the hub's product tabs). Stored in `project`.
+const BR_PRODUCTS = ['SchoolTRAK', 'Time Clocks', 'ID Badging', 'VirtuaTime', 'Positive Attendance', 'Tardy Kiosk', 'Food Service'];
 const BR_RECLASSIFY = [
   { v:'carryover', label:'Your Tasks' }, { v:'pending', label:'Pending Your Action' },
   { v:'waiting_on', label:'Waiting On Others' }, { v:'customer_situation', label:'Customer Situations' },
@@ -1224,6 +1239,12 @@ function BriefingEditRow({ sectionKey, row, ncols, busy, onSave, onCancel }) {
         {BR_STATUS_OPTS.map(o => <option key={o.v} value={o.v}>{o.label}</option>)}
       </select>
     );
+    if (c.key === 'project') return (
+      <select className="md-cellinput" value={form.project || ''} disabled={busy} aria-label="Product" onChange={e => set('project', e.target.value)}>
+        <option value="">-</option>
+        {BR_PRODUCTS.map(p => <option key={p} value={p}>{p}</option>)}
+      </select>
+    );
     if (c.key === 'itemDate') return <input className="md-cellinput" type="date" value={form.item_date} disabled={busy} aria-label="Date" onChange={e => set('item_date', e.target.value)} />;
     const k = c.key;
     return <input className="md-cellinput" type="text" value={form[k] || ''} disabled={busy} aria-label={c.header} onChange={e => set(k, e.target.value)} />;
@@ -1241,11 +1262,11 @@ function BriefingEditRow({ sectionKey, row, ncols, busy, onSave, onCancel }) {
       <tr className="md-editing-extra"><td colSpan={ncols}>
         <div className="md-editextra">
           {def.edit.includes('context') && (
-            <label className="wide"><span>{def.why}</span>
-              <textarea value={form.context || ''} disabled={busy} onChange={e => set('context', e.target.value)} /></label>
+            <label className="grow"><span>{def.why}</span>
+              <input type="text" value={form.context || ''} disabled={busy} onChange={e => set('context', e.target.value)} /></label>
           )}
           {row && (
-            <label><span>Section (reclassify)</span>
+            <label><span>Section</span>
               <select value={section} disabled={busy} onChange={e => setSection(e.target.value)}>
                 {BR_RECLASSIFY.map(o => <option key={o.v} value={o.v}>{o.label}</option>)}
               </select></label>
@@ -1272,7 +1293,11 @@ function BriefingTable({ sectionKey, rows, onWrite, busy }) {
 
   return (
     <MdSec title={def.title} count={rows.length}>
-      <table className="md-tbl">
+      <table className="md-tbl md-tbl-fixed">
+        <colgroup>
+          {def.cols.map(c => <col key={c.key} style={c.w ? { width: c.w } : undefined} />)}
+          <col style={{ width: BR_ACT_W }} />
+        </colgroup>
         <thead><tr>
           {def.cols.map(c => <th key={c.key}>{c.header}</th>)}
           <th aria-label="Actions"></th>

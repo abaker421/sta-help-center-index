@@ -94,6 +94,29 @@ function parseProject(text) {
   return null;
 }
 
+// PB2b.2: the parsed project token -> the canonical Product pick-list value (the same
+// 7 products the tab's <select> offers). Anything that does not map (Hardware/RMA,
+// Renewals, stray "Name:" prefixes, etc.) -> null (renders blank "-") and is collected
+// for the run report so Adam can decide later. The pick list stays the source of truth.
+const PRODUCT_NORMALIZE = {
+  "schooltrak": "SchoolTRAK",
+  "timeclock": "Time Clocks", "time clock": "Time Clocks", "time clocks": "Time Clocks",
+  "virtuatime": "VirtuaTime",
+  "id": "ID Badging", "id badging": "ID Badging",
+  "positive attendance": "Positive Attendance",
+  "tardy kiosk": "Tardy Kiosk",
+  "food service": "Food Service",
+};
+const unmappedProducts = new Set();
+function normProduct(text) {
+  const raw = parseProject(text);
+  if (!raw) return null;
+  const canon = PRODUCT_NORMALIZE[raw.toLowerCase().trim()];
+  if (canon) return canon;
+  unmappedProducts.add(raw);
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // Read inputs
 // ---------------------------------------------------------------------------
@@ -149,7 +172,7 @@ for (const r of parseTable(sectionBlock(md, "Carryover Log"))) {
     text: item,
     meta: [`flagged ${dateFlagged}`, reason].filter(Boolean).join(" - "), // back-compat
     item_date: dateFlagged || null,
-    project: parseProject(item),
+    project: normProduct(item),
     owner: null,
     status_label: null,
     status_class: null,
@@ -191,7 +214,7 @@ for (const r of parseTable(sectionBlock(md, "Waiting On Others"))) {
     text: item,
     meta: [sentTo && `Sent to ${sentTo}`, dateSent, context].filter(Boolean).join(" - "),
     item_date: dateSent || null,
-    project: parseProject(item),
+    project: normProduct(item),
     owner: sentTo || null,
     status_label: null,
     status_class: null,
@@ -234,7 +257,7 @@ for (const r of parseTable(sectionBlock(md, "Completed (last 30 days)"))) {
     text: item,
     meta: notes || "",
     item_date: date || null,
-    project: parseProject(item),
+    project: normProduct(item),
     owner: null,
     status_label: null,
     status_class: null,
@@ -323,7 +346,7 @@ const needsAttention = []; // intentionally empty now (column retained, unused)
       text: "Support calibration aging",
       meta: "",
       item_date: calibrationSnapshot.asOf || null,
-      project: "Support Calibration",
+      project: null, // PB2b.2: not a product -> blank
       owner: null,
       status_label: null,
       status_class: null,
@@ -402,4 +425,11 @@ if (unmatched.length) {
   for (const n of unmatched) console.error(`    - ${n}`);
 } else {
   console.error(`  UNMATCHED refs   none (all Active Projects matched a shared projects row)`);
+}
+// PB2b.2: parsed project tokens that are NOT one of the 7 canonical Products -> set to
+// blank "-". Listed here so Adam can decide whether any deserve a Product later.
+if (unmappedProducts.size) {
+  console.error(`  UNMAPPED products (-> blank "-"; not in the Product pick list): ${[...unmappedProducts].join(", ")}`);
+} else {
+  console.error(`  UNMAPPED products none`);
 }
