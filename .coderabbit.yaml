@@ -1,9 +1,34 @@
-# CodeRabbit config - sta-help-center-index
+# CodeRabbit config - sta-help-center-index (Cloudflare Worker + Pages Functions)
 # Docs: https://docs.coderabbit.ai/getting-started/configure-coderabbit
+language: en-US
 reviews:
-  profile: chill              # switch to "assertive" for pickier reviews
+  profile: assertive          # was "chill"
   high_level_summary: true
   poem: false
-
+  review_status: true
+  auto_review:
+    enabled: true
+    drafts: false
+  path_filters:
+    - "!data/**"              # generated/source index data
+    - "!icons/**"
+    - "!node_modules/**"
+  path_instructions:
+    - path: "functions/**"
+      instructions: >-
+        Focus on Cloudflare Worker/Pages Functions correctness: request
+        validation, proper error responses, and safe handling of bindings and
+        environment variables. Flag any secret or key read from a hardcoded
+        value instead of env bindings.
+    - path: "migrations/**"
+      instructions: >-
+        Flag destructive or irreversible SQL (DROP, DELETE without WHERE) and
+        migrations with no clear rollback path.
+    - path: "scripts/**"
+      instructions: >-
+        Flag file-system operations without error handling.
+    - path: "**/*"
+      instructions: >-
+        Flag any committed secret, API key, token, or credential in plain text.
 chat:
   auto_reply: true
