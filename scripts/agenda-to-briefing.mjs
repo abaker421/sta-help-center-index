@@ -32,7 +32,7 @@ const repoRoot = resolve(__dirname, "..");
 const OWNER = "adamb@k12sta.com";
 
 const DEFAULT_AGENDA =
-  "C:\\Users\\Adam\\Documents\\Claude\\Projects\\.STA Projects\\The Architect\\project-blueprints\\work-personal-assistant\\agenda-state.md";
+  "C:\\Users\\Adam\\Documents\\Claude\\Projects\\STA Projects\\The Architect\\project-blueprints\\work-personal-assistant\\agenda-state.md";
 
 const agendaPath = process.argv[2] ? resolve(process.argv[2]) : DEFAULT_AGENDA;
 const outPath = process.argv[3]

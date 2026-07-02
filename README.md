@@ -23,7 +23,7 @@ Internal article-index portal for School Technology Associates support staff. Si
 
 This repo holds the **deployed** copy. The editable source lives at:
 
-`C:\Users\Adam\Documents\Claude\Projects\.STA Projects\Help Center Assistant\article-index\HC-Index-App.html`
+`C:\Users\Adam\Documents\Claude\Projects\STA Projects\Help Center Assistant\article-index\HC-Index-App.html`
 
 After editing the source, re-sync `index.html` here (see that project's `MAINTENANCE.md`), bump the `CACHE` constant in `sw.js` to `sta-hc-YYYYMMDD`, commit, and push. Cloudflare auto-deploys.
 
