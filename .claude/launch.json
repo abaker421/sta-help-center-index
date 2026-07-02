@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "hub-local",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["wrangler", "pages", "dev", "--binding", "LOCAL_DEV=1", "--port", "8788"],
+      "port": 8788
+    },
+    {
+      "name": "hub-static",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "serve", ".", "-l", "3210"],
+      "port": 3210
+    }
+  ]
+}
