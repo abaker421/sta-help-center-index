@@ -89,7 +89,7 @@ export function assembleProjectsById({ projects = [], items = [], history = [], 
  *   state:(object|null),
  *   items:any[],
  *   refs:any[],
- *   projectsById?:Map<number, object>
+ *   projectsById?:Map<number, object>   // 0017: keyed by tr_sections.id ({id,version,name})
  * }} input
  * @returns the briefing payload
  */
@@ -119,9 +119,13 @@ export function assembleBriefing({ owner, state = null, items = [], refs = [], p
   }
 
   const openProjects = refs.map((ref) => {
-    const shared = ref.project_id != null ? projectsById.get(ref.project_id) : null;
+    // PT1 / migration 0017: briefing_project_refs now points at tr_sections
+    // (section_id), not the Phase-A projects table. projectsById is therefore a
+    // Map<section_id, {id,version,name}>. The My Day tab renders the same field
+    // names (name / personalNote / personalTimeline); only the source changed.
+    const shared = ref.section_id != null ? projectsById.get(ref.section_id) : null;
     // refId / refVersion address the personal ref row (PB2 edits personalNote /
-    // personalTimeline against them). The shared project keeps its own id / version.
+    // personalTimeline against them). The shared section keeps its own id / version.
     const personal = {
       refId: ref.id,
       refVersion: ref.version,
@@ -129,8 +133,8 @@ export function assembleBriefing({ owner, state = null, items = [], refs = [], p
       personalTimeline: parseJson(ref.personal_timeline, null),
     };
     if (shared) return { ...shared, ...personal };
-    // No shared match (null project_id or soft-deleted project): render from the
-    // personal annotations alone. The seed parked the project name in personalNote.
+    // No shared match (null section_id or soft-deleted section): render from the
+    // personal annotations alone. The seed parked the old project name in personalNote.
     return { name: null, ...personal };
   });
 

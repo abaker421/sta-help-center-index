@@ -16,7 +16,7 @@
 // the validated Access JWT by the time this runs.
 
 import { json, error } from "../../_lib/http.js";
-import { assembleBriefing, assembleProjectsById, emptySections } from "../../_lib/briefing.js";
+import { assembleBriefing, emptySections } from "../../_lib/briefing.js";
 
 export const onRequestGet: PagesFunction = async ({ env, data }) => {
   const owner = (data as any)?.user?.email;
@@ -41,7 +41,8 @@ export const onRequestGet: PagesFunction = async ({ env, data }) => {
           ORDER BY section, sort, id`
       ).bind(owner),
       env.DB.prepare(
-        `SELECT id, project_id, personal_note, personal_timeline, sort, version
+        // 0017 repoint: refs now carry section_id (FK -> tr_sections), not project_id.
+        `SELECT id, section_id, personal_note, personal_timeline, sort, version
            FROM briefing_project_refs
           WHERE owner_email = ? AND deleted_at IS NULL
           ORDER BY sort, id`
@@ -92,40 +93,23 @@ export const onRequestGet: PagesFunction = async ({ env, data }) => {
       });
     }
 
-    // Compose the referenced SHARED projects via JOIN (never duplicated per user).
-    // Only fetch the shared rows when refs actually point at projects.
-    let projectsById = new Map<number, any>();
-    const hasProjectRefs = refs.some((r) => r.project_id != null);
-    if (hasProjectRefs) {
-      const [projects, openItems, history, timeline] = await env.DB.batch([
-        env.DB.prepare(
-          `SELECT id, "group", name, status, status_class, stage, stage_class,
-                  statusline, what_it_is, next_step, sort, version, updated_at
-             FROM projects
-            WHERE deleted_at IS NULL`
-        ),
-        env.DB.prepare(
-          `SELECT id, project_id, text, stage, stage_class, meta, done, sort, version
-             FROM open_items
-            WHERE deleted_at IS NULL
-            ORDER BY project_id, sort, id`
-        ),
-        env.DB.prepare(
-          `SELECT id, project_id, when_label, note FROM stage_history ORDER BY project_id, id`
-        ),
-        env.DB.prepare(
-          `SELECT id, project_id, when_label, note FROM timeline ORDER BY project_id, id`
-        ),
-      ]);
-      projectsById = assembleProjectsById({
-        projects: projects.results,
-        items: openItems.results,
-        history: history.results,
-        timeline: timeline.results,
-      });
+    // Compose the referenced SHARED sections via JOIN (never duplicated per user).
+    // 0017 repoint: the refs point at tr_sections now, so the "shared" row a ref
+    // resolves to is the section {id, version, name} - the same grain the old
+    // projects table held (a product line / workstream), and the faithful target
+    // for a personal "where are we" note. Only fetch when refs actually point at one.
+    let sectionsById = new Map<number, any>();
+    const hasSectionRefs = refs.some((r) => r.section_id != null);
+    if (hasSectionRefs) {
+      const secRes = await env.DB.prepare(
+        `SELECT id, version, name FROM tr_sections WHERE deleted_at IS NULL`
+      ).all();
+      sectionsById = new Map(
+        ((secRes.results as any[]) ?? []).map((s) => [s.id, { id: s.id, version: s.version, name: s.name }])
+      );
     }
 
-    const payload = assembleBriefing({ owner, state, items, refs, projectsById });
+    const payload = assembleBriefing({ owner, state, items, refs, projectsById: sectionsById });
     (payload as any).proposals = proposals;
     return json(payload);
   } catch (e) {
