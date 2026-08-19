@@ -19,8 +19,16 @@ Installable PWA.
   workflow here. Access is gated to `@k12sta.com` via Cloudflare Zero Trust
   (Google Workspace SSO).
 - This repo holds the DEPLOYED copy; the editable source lives in the Help Center
-  Assistant project (see README). After re-syncing `index.html`, bump the `CACHE`
-  constant in `sw.js` (`sta-hc-YYYYMMDD`) so clients pick up the new build.
+  Assistant project (see README). Do NOT hand-edit `sw.js`: the build script
+  (`build-react-app.py`) regenerates it on every run and stamps the `CACHE`
+  constant as `sta-hc-<unix-timestamp>` (from `int(time.time())` at build time).
+  Re-sync the whole `dist/` output, not just `index.html`, so the new cache key
+  ships with it and clients pick up the build.
+- The key is a per-BUILD timestamp, not a per-day date, and must stay that way.
+  Two deploys on the same calendar day are routine here; a date-only key like
+  `sta-hc-YYYYMMDD` would emit an identical value for the second build, so the
+  service worker would keep serving the first build's cached assets to anyone who
+  already had the PWA installed - a silent staleness bug with no error to notice.
 
 ## Branching (main is protected - PR only)
 
