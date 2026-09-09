@@ -752,6 +752,13 @@ const CHEATSHEET_TAB = -4;
 const CHEAT_DATA = window.CHEAT_DATA || {};
 // -5 is the next free inline-panel slot (-1 is the QUICKLINKS_TAB findIndex miss).
 const TIMETRACKING_TAB = -5;
+// FEATURE FLAG - Adam, 2026-09-09. The Time Tracking view is finished, but the Pages
+// Function behind it (functions/api/timetracking/, functions/_lib/skyward.js) is NOT
+// committed to the repo and is absent from origin/main, so on the live site every call
+// it makes 404s. The view, its router branch and all its CSS stay exactly where they
+// are; only the way in is hidden. Flip this to true in the SAME commit that ships that
+// backend, rebuild, and the button returns with no other change.
+const TIMETRACKING_ENABLED = false;
 const SEARCH_INDEX = window.SEARCH_INDEX || [];
 
 // Global search (Turn 4). SEARCH_INDEX is a flat array baked at build time; each record is
@@ -3225,7 +3232,7 @@ function App() {
         ? <ProjectsView />
         : tab === CHEATSHEET_TAB
         ? <CheatSheetView data={CHEAT_DATA} />
-        : tab === TIMETRACKING_TAB
+        : (TIMETRACKING_ENABLED && tab === TIMETRACKING_TAB)
         ? <TimeTrackingView />
         : tab === FAVS_TAB
         ? <FavoritesView favs={favs} onToggleFav={toggleFav} />
@@ -3294,11 +3301,13 @@ function AppHeader({ query, onQuery, searchRef, active, onSelect, scope, onScope
           onClick={() => onSelect(CHEATSHEET_TAB)}>
           Cheat Sheet
         </button>
-        <button type="button"
-          className={"hdr-tool-btn hdr-tt-btn" + (active === TIMETRACKING_TAB ? " active" : "")}
-          onClick={() => onSelect(TIMETRACKING_TAB)}>
-          Time Tracking
-        </button>
+        {TIMETRACKING_ENABLED && (
+          <button type="button"
+            className={"hdr-tool-btn hdr-tt-btn" + (active === TIMETRACKING_TAB ? " active" : "")}
+            onClick={() => onSelect(TIMETRACKING_TAB)}>
+            Time Tracking
+          </button>
+        )}
         {TOOL_TABS.map(t => (
           <button key={t.i} type="button"
             className={"hdr-tool-btn" + (t.i === active ? " active" : "")}
