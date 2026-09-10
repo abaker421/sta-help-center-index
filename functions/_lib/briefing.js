@@ -89,11 +89,19 @@ export function assembleProjectsById({ projects = [], items = [], history = [], 
  *   state:(object|null),
  *   items:any[],
  *   refs:any[],
- *   projectsById?:Map<number, object>   // 0017: keyed by tr_sections.id ({id,version,name})
+ *   sectionsById?:Map<number, object>,  // 0017 EXPAND: keyed by tr_sections.id ({id,version,name})
+ *   projectsById?:Map<number, object>   // Phase-A fallback: keyed by projects.id
  * }} input
  * @returns the briefing payload
  */
-export function assembleBriefing({ owner, state = null, items = [], refs = [], projectsById = new Map() }) {
+export function assembleBriefing({
+  owner,
+  state = null,
+  items = [],
+  refs = [],
+  sectionsById = new Map(),
+  projectsById = new Map(),
+}) {
   const sections = emptySections();
   for (const it of items) {
     const key = SECTION_KEY[it.section];
@@ -119,11 +127,16 @@ export function assembleBriefing({ owner, state = null, items = [], refs = [], p
   }
 
   const openProjects = refs.map((ref) => {
-    // PT1 / migration 0017: briefing_project_refs now points at tr_sections
-    // (section_id), not the Phase-A projects table. projectsById is therefore a
-    // Map<section_id, {id,version,name}>. The My Day tab renders the same field
-    // names (name / personalNote / personalTimeline); only the source changed.
-    const shared = ref.section_id != null ? projectsById.get(ref.section_id) : null;
+    // PT1 / migration 0017 (EXPAND): briefing_project_refs gained section_id
+    // alongside project_id. Prefer the section; FALL BACK to the Phase-A project
+    // when section_id is absent (0017 not applied yet), NULL (not backfilled), or
+    // unresolvable (section soft-deleted). That fallback is what makes this file
+    // correct against both schema shapes, so the migration and this deploy can ship
+    // in either order. The My Day tab renders the same field names either way
+    // (name / personalNote / personalTimeline); only the source changes.
+    let shared = null;
+    if (ref.section_id != null) shared = sectionsById.get(ref.section_id) ?? null;
+    if (!shared && ref.project_id != null) shared = projectsById.get(ref.project_id) ?? null;
     // refId / refVersion address the personal ref row (PB2 edits personalNote /
     // personalTimeline against them). The shared section keeps its own id / version.
     const personal = {
@@ -133,8 +146,9 @@ export function assembleBriefing({ owner, state = null, items = [], refs = [], p
       personalTimeline: parseJson(ref.personal_timeline, null),
     };
     if (shared) return { ...shared, ...personal };
-    // No shared match (null section_id or soft-deleted section): render from the
-    // personal annotations alone. The seed parked the old project name in personalNote.
+    // No shared match on EITHER id: render from the personal annotations alone.
+    // 0017 step 3 parks the old project name in personalNote as "[was: ...]" for
+    // exactly this case, so the row still reads sensibly instead of going nameless.
     return { name: null, ...personal };
   });
 

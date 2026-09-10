@@ -16,7 +16,7 @@
 // the validated Access JWT by the time this runs.
 
 import { json, error } from "../../_lib/http.js";
-import { assembleBriefing, emptySections } from "../../_lib/briefing.js";
+import { assembleBriefing, assembleProjectsById, emptySections } from "../../_lib/briefing.js";
 
 export const onRequestGet: PagesFunction = async ({ env, data }) => {
   const owner = (data as any)?.user?.email;
@@ -41,8 +41,14 @@ export const onRequestGet: PagesFunction = async ({ env, data }) => {
           ORDER BY section, sort, id`
       ).bind(owner),
       env.DB.prepare(
-        // 0017 repoint: refs now carry section_id (FK -> tr_sections), not project_id.
-        `SELECT id, section_id, personal_note, personal_timeline, sort, version
+        // 0017 EXPAND: refs may carry section_id (FK -> tr_sections) IN ADDITION TO
+        // project_id. `SELECT *` deliberately, and it is load-bearing: naming
+        // section_id explicitly makes this statement fail with "no such column"
+        // against a database where 0017 has not been applied yet, which is exactly
+        // the coordinated-outage window this design exists to remove. Reading the
+        // columns by name off the row keeps one deploy correct against BOTH schema
+        // shapes, so the migration and this file can ship in either order.
+        `SELECT *
            FROM briefing_project_refs
           WHERE owner_email = ? AND deleted_at IS NULL
           ORDER BY sort, id`
@@ -93,14 +99,18 @@ export const onRequestGet: PagesFunction = async ({ env, data }) => {
       });
     }
 
-    // Compose the referenced SHARED sections via JOIN (never duplicated per user).
-    // 0017 repoint: the refs point at tr_sections now, so the "shared" row a ref
-    // resolves to is the section {id, version, name} - the same grain the old
-    // projects table held (a product line / workstream), and the faithful target
-    // for a personal "where are we" note. Only fetch when refs actually point at one.
+    // Compose the referenced SHARED rows via JOIN (never duplicated per user).
+    //
+    // 0017 EXPAND: a ref resolves to a tr_sections row {id, version, name} - the same
+    // grain the old projects table held (a product line / workstream), and the
+    // faithful target for a personal "where are we" note. But section_id only exists
+    // once 0017 is applied, so this READS section_id AND FALLS BACK to project_id.
+    // That is what makes one deploy correct against both schema shapes: before 0017
+    // every ref falls back, after 0017 every ref resolves by section, and during a
+    // partial backfill each ref independently takes whichever it has.
+    // Do not remove the fallback until the CONTRACT migration has dropped project_id.
     let sectionsById = new Map<number, any>();
-    const hasSectionRefs = refs.some((r) => r.section_id != null);
-    if (hasSectionRefs) {
+    if (refs.some((r) => r.section_id != null)) {
       const secRes = await env.DB.prepare(
         `SELECT id, version, name FROM tr_sections WHERE deleted_at IS NULL`
       ).all();
@@ -109,7 +119,42 @@ export const onRequestGet: PagesFunction = async ({ env, data }) => {
       );
     }
 
-    const payload = assembleBriefing({ owner, state, items, refs, projectsById: sectionsById });
+    // Only pay for the Phase-A projects fetch when a ref actually still needs it -
+    // i.e. it has a project_id and did NOT resolve to a section above.
+    let projectsById = new Map<number, any>();
+    const needsProjectFallback = refs.some(
+      (r) => r.project_id != null && !(r.section_id != null && sectionsById.has(r.section_id))
+    );
+    if (needsProjectFallback) {
+      const [projects, openItems, history, timeline] = await env.DB.batch([
+        env.DB.prepare(
+          `SELECT id, "group", name, status, status_class, stage, stage_class,
+                  statusline, what_it_is, next_step, sort, version, updated_at
+             FROM projects
+            WHERE deleted_at IS NULL`
+        ),
+        env.DB.prepare(
+          `SELECT id, project_id, text, stage, stage_class, meta, done, sort, version
+             FROM open_items
+            WHERE deleted_at IS NULL
+            ORDER BY project_id, sort, id`
+        ),
+        env.DB.prepare(
+          `SELECT id, project_id, when_label, note FROM stage_history ORDER BY project_id, id`
+        ),
+        env.DB.prepare(
+          `SELECT id, project_id, when_label, note FROM timeline ORDER BY project_id, id`
+        ),
+      ]);
+      projectsById = assembleProjectsById({
+        projects: projects.results,
+        items: openItems.results,
+        history: history.results,
+        timeline: timeline.results,
+      });
+    }
+
+    const payload = assembleBriefing({ owner, state, items, refs, sectionsById, projectsById });
     (payload as any).proposals = proposals;
     return json(payload);
   } catch (e) {
